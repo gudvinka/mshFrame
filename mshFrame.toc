@@ -1,0 +1,12 @@
+## Interface: 120000  ## Версия The War Within (проверь /run print(GetBuildInfo()))
+## Title: mshFrames
+## Notes: Настройка текстур и шрифтов для фреймов через LSM.
+## Version: 1.0
+## Author: gudvinka
+## OptionalDeps: LibSharedMedia-3.0
+
+# Сначала загружаем библиотеку-заглушку
+Libs\LibStub.lua
+
+# Потом твой код
+Core.lua
