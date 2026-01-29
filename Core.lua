@@ -77,5 +77,3 @@ SlashCmdList["MSHFRAME"] = function()
     end
     print("|cff00ff00mshFrame:|r Стиль применен, имена обрезаны!")
 end
-end
-
