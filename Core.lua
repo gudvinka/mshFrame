@@ -2,11 +2,11 @@
 local addonName, ns = ...
 local msh = ns
 local LSM = LibStub("LibSharedMedia-3.0")
+local unitToFrame = {} -- Наш "быстрый справочник"
 
 local function ApplyMshStyle(frame)
     if not frame or frame:IsForbidden() then return end
 
-    -- Берем конфиг ПРЯМО ЗДЕСЬ
     local cfg = msh.cfg
     if not cfg then return end
 
@@ -15,8 +15,11 @@ local function ApplyMshStyle(frame)
         return
     end
 
+    -- ИСПРАВЛЕНО: Записываем в словарь, если юнит ЕСТЬ
     local unit = frame.displayedUnit or frame.unit
-    if not unit then return end
+    if unit then
+        unitToFrame[unit] = frame
+    end
 
     -- 1. ТЕКСТУРА И ЦВЕТ
     if frame.healthBar then
@@ -74,33 +77,23 @@ eventFrame:RegisterEvent("UNIT_ENTERED_VEHICLE")
 eventFrame:RegisterEvent("UNIT_EXITED_VEHICLE")
 
 -- 2. Обработка событий
+eventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
+
 eventFrame:SetScript("OnEvent", function(self, event, unit)
     if event == "PLAYER_LOGIN" then
         SyncBlizzardSettings()
-
-        -- Принудительно обновляем все видимые фреймы один раз
-        for i = 1, 40 do
-            local frame = _G["CompactRaidFrame" .. i] or _G["CompactPartyFrameMember" .. i]
-            if frame then msh.UpdateLayers(frame) end
-        end
         self:UnregisterEvent("PLAYER_LOGIN")
+    elseif event == "GROUP_ROSTER_UPDATE" then
+        -- Очищаем старые связи, так как юниты (party1, raid5) могли смениться
+        wipe(unitToFrame)
     elseif unit then
-        -- Самый быстрый способ найти фрейм в обход nil-функций
-        -- Перебираем все возможные фреймы группы и рейда
-        for i = 1, 5 do
-            local pf = _G["CompactPartyFrameMember" .. i]
-            if pf and (pf.displayedUnit == unit or pf.unit == unit) then
-                msh.UpdateLayers(pf)
-            end
-        end
-        for i = 1, 40 do
-            local rf = _G["CompactRaidFrame" .. i]
-            if rf and (rf.displayedUnit == unit or rf.unit == unit) then
-                msh.UpdateLayers(rf)
-            end
+        local frame = unitToFrame[unit]
+        if frame then
+            msh.UpdateLayers(frame)
         end
     end
 end)
+
 -- Хук на обновление Blizzard
 hooksecurefunc("CompactUnitFrame_UpdateAll", function(frame)
     ApplyMshStyle(frame)
