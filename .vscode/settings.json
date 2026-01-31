@@ -19,6 +19,9 @@
         "CompactPartyFrameMember1",
         "RAID_CLASS_COLORS",
         "GetUnitName",
-        "ReloadUI"
+        "ReloadUI",
+        "CompactRaidFrameManager_UpdateOptionsFlowContainer",
+        "DefaultCompactUnitFrameSetupOptions",
+        "CompactRaidFrameContainer"
     ]
 }

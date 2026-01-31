@@ -1,13 +1,19 @@
-## Interface: 120000  ## Версия The War Within (проверь /run print(GetBuildInfo()))
-## Title: mshFrames
-## Notes: Настройка текстур и шрифтов для фреймов через LSM.
-## Version: 0.1.1
+## Interface: 120000
+# Версия Midnight (12.0). Проверка: /run print(GetBuildInfo()) [cite: 2026-01-29]
+## Title: mshFrame
+## Notes: Настройка текстур и шрифтов для фреймов через LSM. [cite: 2026-01-29]
+## Version: 0.2
 ## Author: gudvinka
-## IconTexture: Interface\AddOns\mshFrame\media\ggg
+## IconTexture: Interface\AddOns\mshFrame\media\ggg.tga
 
+
+# Библиотеки [cite: 2026-01-29]
+Libs\LibSharedMedia-3.0\LibStub\LibStub.lua
 
 embeds.xml
 
-Const.lua
+# Логика аддона [cite: 2026-01-29]
+Config.lua
 Utils.lua
+CustomLayers.lua
 Core.lua
