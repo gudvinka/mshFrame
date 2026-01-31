@@ -18,6 +18,7 @@
         "SlashCmdList",
         "CompactPartyFrameMember1",
         "RAID_CLASS_COLORS",
-        "GetUnitName"
+        "GetUnitName",
+        "ReloadUI"
     ]
 }
