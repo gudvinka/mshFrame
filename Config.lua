@@ -25,7 +25,3 @@ ns.cfg.statusY = 4
 -- РЕЖИМ ОТОБРАЖЕНИЯ ХП
 -- РЕЖИМ ХП: "PERCENT", "VALUE", "BOTH", "NONE"
 ns.cfg.hpMode = "VALUE"
-
--- 4. ЦВЕТА
--- ns.cfg.useClassColors = true
--- ns.cfg.staticColor = { 0.00, 1.00, 0.59 } -- monk
