@@ -68,34 +68,42 @@ end
 -- 1. Создаем скрытый фрейм для отслеживания событий
 local eventFrame = CreateFrame("Frame")
 eventFrame:RegisterEvent("PLAYER_LOGIN")
+eventFrame:RegisterEvent("UNIT_HEALTH")
+eventFrame:RegisterEvent("UNIT_MAXHEALTH")
+eventFrame:RegisterEvent("UNIT_ENTERED_VEHICLE")
+eventFrame:RegisterEvent("UNIT_EXITED_VEHICLE")
 
--- 2. Вешаем выполнение функции на это событие
-eventFrame:SetScript("OnEvent", function(self, event)
+-- 2. Обработка событий
+eventFrame:SetScript("OnEvent", function(self, event, unit)
     if event == "PLAYER_LOGIN" then
-        -- Выполняем синхронизацию CVars
         SyncBlizzardSettings()
 
-        -- ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ЦВЕТА ДЛЯ ВСЕХ ФРЕЙМОВ
-        -- Это "протолкнет" твой цвет сразу при входе
-        if CompactRaidFrameContainer and CompactRaidFrameContainer.ApplyToFrames then
-            CompactRaidFrameContainer:ApplyToFrames("Default", function(frame)
-                ApplyMshStyle(frame) -- Вызываем твою функцию стиля для каждого фрейма
-            end)
+        -- Принудительно обновляем все видимые фреймы один раз
+        for i = 1, 40 do
+            local frame = _G["CompactRaidFrame" .. i] or _G["CompactPartyFrameMember" .. i]
+            if frame then msh.UpdateLayers(frame) end
         end
-
-        print("|cff00ff00mshFrame:|r Настройки и цвета применены.")
         self:UnregisterEvent("PLAYER_LOGIN")
+    elseif unit then
+        -- Самый быстрый способ найти фрейм в обход nil-функций
+        -- Перебираем все возможные фреймы группы и рейда
+        for i = 1, 5 do
+            local pf = _G["CompactPartyFrameMember" .. i]
+            if pf and (pf.displayedUnit == unit or pf.unit == unit) then
+                msh.UpdateLayers(pf)
+            end
+        end
+        for i = 1, 40 do
+            local rf = _G["CompactRaidFrame" .. i]
+            if rf and (rf.displayedUnit == unit or rf.unit == unit) then
+                msh.UpdateLayers(rf)
+            end
+        end
     end
 end)
-
 -- Хук на обновление Blizzard
 hooksecurefunc("CompactUnitFrame_UpdateAll", function(frame)
     ApplyMshStyle(frame)
-end)
-
--- Хук на обновление только текста (урон, исцеление)
-hooksecurefunc("CompactUnitFrame_UpdateStatusText", function(frame)
-    msh.UpdateLayers(frame)
 end)
 
 -- Команда перезагрузки
