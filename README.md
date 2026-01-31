@@ -26,6 +26,23 @@
 - **Raid optimization**: Checking raid size
 - **SOLO/Group**: checking frames for solo/group
 
+### Work with role icons:
+- position
+- visible
+- size
+
+### Work with auras:
+- position
+- anchors
+- size
+- aura text size
+
+### Work with big save icon
+- position
+- anchors
+- size
+- aura text size
+
 ## How to config:
 
 Please change values in [[config.lua]]
