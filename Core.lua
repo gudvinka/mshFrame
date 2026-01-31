@@ -23,13 +23,14 @@ local function ApplyMshStyle(frame)
         local tex = LSM:Fetch("statusbar", cfg.texture)
         frame.healthBar:SetStatusBarTexture(tex)
 
-        local r, g, b
-        if cfg.useClassColors then
-            r, g, b = msh.GetClassColor(unit)
-        else
-            r, g, b = unpack(cfg.staticColor)
-        end
-        frame.healthBar:SetStatusBarColor(r, g, b)
+        -- own coloring frames
+        -- local r, g, b
+        -- if cfg.useClassColors then
+        --     r, g, b = msh.GetClassColor(unit)
+        -- else
+        --     r, g, b = unpack(cfg.staticColor)
+        -- end
+        -- frame.healthBar:SetStatusBarColor(r, g, b)
     end
 
     -- 2. СЛОИ (Имена и ХП)
@@ -51,7 +52,7 @@ local function SyncBlizzardSettings()
     end
 
     -- 2. Включаем текст (чтобы режимы VALUE/PERCENT работали)
-    SetCVar("statusText", "1")
+    -- SetCVar("statusText", "1")
 
     -- 3. Принудительно просим Blizzard обновить все фреймы
     if CompactUnitFrameProfiles_ApplyCurrentSettings then
@@ -71,13 +72,18 @@ eventFrame:RegisterEvent("PLAYER_LOGIN")
 -- 2. Вешаем выполнение функции на это событие
 eventFrame:SetScript("OnEvent", function(self, event)
     if event == "PLAYER_LOGIN" then
-        -- Выполняем синхронизацию (теперь она сработает без задержки)
+        -- Выполняем синхронизацию CVars
         SyncBlizzardSettings()
 
-        -- Выводим принт (по желанию, можно потом удалить)
-        print("|cff00ff00mshFrame:|r Настройки применены при логине.")
+        -- ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ЦВЕТА ДЛЯ ВСЕХ ФРЕЙМОВ
+        -- Это "протолкнет" твой цвет сразу при входе
+        if CompactRaidFrameContainer and CompactRaidFrameContainer.ApplyToFrames then
+            CompactRaidFrameContainer:ApplyToFrames("Default", function(frame)
+                ApplyMshStyle(frame) -- Вызываем твою функцию стиля для каждого фрейма
+            end)
+        end
 
-        -- Отключаем событие, чтобы оно не срабатывало лишний раз
+        print("|cff00ff00mshFrame:|r Настройки и цвета применены.")
         self:UnregisterEvent("PLAYER_LOGIN")
     end
 end)
@@ -85,6 +91,11 @@ end)
 -- Хук на обновление Blizzard
 hooksecurefunc("CompactUnitFrame_UpdateAll", function(frame)
     ApplyMshStyle(frame)
+end)
+
+-- Хук на обновление только текста (урон, исцеление)
+hooksecurefunc("CompactUnitFrame_UpdateStatusText", function(frame)
+    msh.UpdateLayers(frame)
 end)
 
 -- Команда перезагрузки

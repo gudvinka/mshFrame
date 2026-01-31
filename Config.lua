@@ -22,11 +22,11 @@ ns.cfg.statusY = 4
 
 -- РЕЖИМ ОТОБРАЖЕНИЯ ХП
 -- РЕЖИМ ХП: "PERCENT", "VALUE", "BOTH", "NONE"
-ns.cfg.hpMode = "VALUE"
+ns.cfg.hpMode = "PERCENT"
 
 -- 4. ЦВЕТА
-ns.cfg.useClassColors = false
-ns.cfg.staticColor = { 0.00, 1.00, 0.59 } -- monk
+-- ns.cfg.useClassColors = true
+-- ns.cfg.staticColor = { 0.00, 1.00, 0.59 } -- monk
 
 -- 5. ФОРМАТИРОВАНИЕ
 ns.cfg.shortenNames = true -- Исправлено: теперь ns.cfg
