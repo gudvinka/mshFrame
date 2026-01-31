@@ -59,3 +59,9 @@ ns.cfg.dispelX = -2                -- Смещение влево
 ns.cfg.dispelY = 2                 -- Смещение вверх
 ns.cfg.dispelGrow = "LEFT"         -- Рост влево
 ns.cfg.dispelSpacing = 2
+
+-- 8. ЦЕНТРАЛЬНЫЙ СЕЙВ (Center Defensive Buff)
+ns.cfg.bigDefSize = 200 -- Обычно его делают крупнее остальных
+ns.cfg.bigDefPoint = "CENTER"
+ns.cfg.bigDefX = 0
+ns.cfg.bigDefY = 0

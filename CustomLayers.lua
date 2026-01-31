@@ -34,6 +34,16 @@ function msh.UpdateAuras(frame)
             y = cfg.dispelY or 2,
             grow = cfg.dispelGrow or "LEFT",
             space = cfg.dispelSpacing or 2
+        },
+        {
+            -- Blizzard называют этот фрейм CenterDefensiveBuff
+            pool = { frame.CenterDefensiveBuff },
+            size = cfg.bigDefSize or 28,
+            point = cfg.bigDefPoint or "CENTER",
+            x = cfg.bigDefX or 0,
+            y = cfg.bigDefY or 0,
+            grow = "RIGHT", -- Для одной иконки не важно
+            space = 0
         }
     }
 
