@@ -2,8 +2,6 @@
 
 ## Features
 
----
-
 ### Fonts and Textures:
 - **Embedding LibSharedMedia-3.0**: supporting default textures and fonts
 - **Added custom font**
