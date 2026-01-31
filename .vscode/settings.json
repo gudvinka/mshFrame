@@ -23,6 +23,7 @@
         "CompactRaidFrameManager_UpdateOptionsFlowContainer",
         "DefaultCompactUnitFrameSetupOptions",
         "CompactRaidFrameContainer",
-        "CompactPartyFrame"
+        "CompactPartyFrame",
+        "SetRaidTargetIconTexture"
     ]
 }
