@@ -22,6 +22,7 @@
         "ReloadUI",
         "CompactRaidFrameManager_UpdateOptionsFlowContainer",
         "DefaultCompactUnitFrameSetupOptions",
-        "CompactRaidFrameContainer"
+        "CompactRaidFrameContainer",
+        "CompactPartyFrame"
     ]
 }

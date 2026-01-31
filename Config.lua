@@ -22,7 +22,7 @@ ns.cfg.statusY = 4
 
 -- РЕЖИМ ОТОБРАЖЕНИЯ ХП
 -- РЕЖИМ ХП: "PERCENT", "VALUE", "BOTH", "NONE"
-ns.cfg.hpMode = "NONE"
+ns.cfg.hpMode = "VALUE"
 
 -- 4. ЦВЕТА
 ns.cfg.useClassColors = false

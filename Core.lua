@@ -1,3 +1,4 @@
+---@diagnostic disable: undefined-global
 local addonName, ns = ...
 local msh = ns
 local LSM = LibStub("LibSharedMedia-3.0")
@@ -49,14 +50,17 @@ local function SyncBlizzardSettings()
         SetCVar("raidFramesHealthText", "perc")
     end
 
-    -- 2. Включаем текст
+    -- 2. Включаем текст (чтобы режимы VALUE/PERCENT работали)
     SetCVar("statusText", "1")
 
-    -- 3. Принудительно обновляем фреймы
+    -- 3. Принудительно просим Blizzard обновить все фреймы
     if CompactUnitFrameProfiles_ApplyCurrentSettings then
         CompactUnitFrameProfiles_ApplyCurrentSettings()
-    elseif CompactRaidFrameManager_UpdateOptionsFlowContainer then
-        CompactRaidFrameManager_UpdateOptionsFlowContainer()
+    end
+
+    -- Дополнительный "пинок" для надежности
+    if CompactRaidFrameContainer and CompactRaidFrameContainer.LayoutFrames then
+        CompactRaidFrameContainer:LayoutFrames()
     end
 end
 

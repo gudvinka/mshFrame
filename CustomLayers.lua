@@ -25,14 +25,22 @@ function msh.UpdateLayers(frame)
     local unit = frame.displayedUnit or frame.unit
     if not unit or not UnitExists(unit) then return end
 
+    -- 1. Имена обновляем всегда, они от режима HP не зависят
     if frame.mshName then
         frame.mshName:SetText(msh.GetShortName(unit))
     end
 
+    -- 2. А вот для ХП проверяем конфиг
     if frame.mshHP then
-        local status = frame.statusText
-        if status then
-            frame.mshHP:SetText(status:GetText() or "")
+        -- Если в конфиге NONE, просто ставим пустоту и не смотрим на Blizzard
+        if ns.cfg.hpMode == "NONE" then
+            frame.mshHP:SetText("")
+        else
+            -- В остальных случаях копируем как обычно
+            local status = frame.statusText
+            if status then
+                frame.mshHP:SetText(status:GetText() or "")
+            end
         end
     end
 end
