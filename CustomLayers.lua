@@ -74,7 +74,8 @@ function msh.UpdateAuras(frame)
                         icon.cooldown:SetHideCountdownNumbers(not cfg.showAuraTimer)
                         local timer = icon.cooldown:GetRegions()
                         if timer and timer:GetObjectType() == "FontString" then
-                            timer:SetFont(cfg.font, data.size * 0.6, "OUTLINE")
+                            local fontSize = data.size * (cfg.auraTextScale or 0.6)
+                            timer:SetFont(cfg.font, fontSize, "OUTLINE")
                         end
                     end
                 end
