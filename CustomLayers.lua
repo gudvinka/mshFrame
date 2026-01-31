@@ -1,12 +1,12 @@
 local addonName, ns = ...
 local msh = ns
 
--- 1. СТИЛИЗАЦИЯ И ПОЗИЦИЯ АУР (Баффы и Дебаффы)
+-- 1. УНИВЕРСАЛЬНАЯ ФУНКЦИЯ ОБНОВЛЕНИЯ АУР
 function msh.UpdateAuras(frame)
     if not frame or frame:IsForbidden() then return end
     local cfg = ns.cfg
 
-    -- Настройки из конфига (с дефолтными значениями, чтобы не упало)
+    -- Массив настроек для всех типов индикаторов
     local auraSettings = {
         {
             pool = frame.buffFrames,
@@ -25,6 +25,15 @@ function msh.UpdateAuras(frame)
             y = cfg.debuffY or -15,
             grow = cfg.debuffGrow or "LEFT",
             space = cfg.debuffSpacing or 2
+        },
+        {
+            pool = frame.dispelDebuffFrames,
+            size = cfg.dispelSize or 14,
+            point = cfg.dispelPoint or "BOTTOMRIGHT",
+            x = cfg.dispelX or -2,
+            y = cfg.dispelY or 2,
+            grow = cfg.dispelGrow or "LEFT",
+            space = cfg.dispelSpacing or 2
         }
     }
 
@@ -50,7 +59,7 @@ function msh.UpdateAuras(frame)
                     end
                     previousIcon = icon
 
-                    -- Таймер
+                    -- Таймер (только если он есть у иконки)
                     if icon.cooldown then
                         icon.cooldown:SetHideCountdownNumbers(not cfg.showAuraTimer)
                         local timer = icon.cooldown:GetRegions()
@@ -64,7 +73,7 @@ function msh.UpdateAuras(frame)
     end
 end
 
--- Хук для аур (чтобы они не прыгали)
+-- Хук, чтобы Близзарды не перехватывали позицию
 hooksecurefunc("CompactUnitFrame_UpdateAuras", function(frame)
     if frame.mshLayersCreated then
         msh.UpdateAuras(frame)
@@ -75,15 +84,12 @@ end)
 function msh.CreateLayers(frame)
     local cfg = ns.cfg
     if not frame.mshLayersCreated then
-        -- Имя
         frame.mshName = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         if frame.name then frame.name:SetAlpha(0) end
 
-        -- ХП
         frame.mshHP = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         if frame.statusText then frame.statusText:SetAlpha(0) end
 
-        -- Роль
         if frame.roleIcon then
             frame.roleIcon:SetParent(frame)
             frame.roleIcon:SetDrawLayer("OVERLAY", 7)
@@ -96,21 +102,20 @@ function msh.CreateLayers(frame)
     end
 end
 
--- 3. ОБНОВЛЕНИЕ ТЕКСТОВ И РОЛИ
+-- 3. ОБНОВЛЕНИЕ ТЕКСТА И РОЛИ
 function msh.UpdateLayers(frame)
     if not frame or not frame.mshLayersCreated then return end
     local unit = frame.displayedUnit or frame.unit
     if not unit or not UnitExists(unit) then return end
-
     local cfg = ns.cfg
 
-    -- Обновляем Имя
+    -- Имя
     frame.mshName:SetFont(cfg.font, cfg.fontSizeName, "OUTLINE")
     frame.mshName:ClearAllPoints()
     frame.mshName:SetPoint(cfg.namePoint, frame, cfg.nameX, cfg.nameY)
     frame.mshName:SetText(msh.GetShortName(unit))
 
-    -- Обновляем ХП
+    -- ХП
     frame.mshHP:SetFont(cfg.font, cfg.fontSizeStatus, "OUTLINE")
     frame.mshHP:ClearAllPoints()
     frame.mshHP:SetPoint(cfg.statusPoint, frame, cfg.statusX, cfg.statusY)
@@ -120,21 +125,14 @@ function msh.UpdateLayers(frame)
         frame.mshHP:SetText(frame.statusText:GetText() or "")
     end
 
-    -- ЗАЩИТА ИКОНКИ РОЛИ
+    -- Роль (фикс позиции)
     if frame.roleIcon and cfg.showRoleIcon then
         frame.roleIcon:SetSize(cfg.roleIconSize, cfg.roleIconSize)
         frame.roleIcon:ClearAllPoints()
         frame.roleIcon:SetPoint(cfg.roleIconPoint, frame, cfg.roleIconX, cfg.roleIconY)
-
-        -- Если юнит в группе и имеет роль — принудительно показываем
         local role = UnitGroupRolesAssigned(unit)
-        if role and role ~= "NONE" then
-            frame.roleIcon:Show()
-        else
-            frame.roleIcon:Hide()
-        end
+        if role and role ~= "NONE" then frame.roleIcon:Show() else frame.roleIcon:Hide() end
     end
 
-    -- Первичное обновление аур
     msh.UpdateAuras(frame)
 end

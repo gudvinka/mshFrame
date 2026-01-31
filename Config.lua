@@ -43,12 +43,19 @@ ns.cfg.auraGrow = "LEFT" -- Куда растут: "RIGHT" (вправо) или
 ns.cfg.auraSpacing = 2   -- Отступ между иконками
 
 -- Дебаффы
-ns.cfg.debuffSize = 50
-ns.cfg.debuffPoint = "BOTTOMRIGHT"
-ns.cfg.debuffX = -5
-ns.cfg.debuffY = -15
+ns.cfg.debuffSize = 30
+ns.cfg.debuffPoint = "TOPRIGHT"
+ns.cfg.debuffX = 1
+ns.cfg.debuffY = 1
 ns.cfg.debuffGrow = "LEFT" -- Рост влево (навстречу баффам)
 ns.cfg.debuffSpacing = 3
-
 -- Общие настройки
 ns.cfg.showAuraTimer = true
+
+-- 7. ИНДИКАТОРЫ ДИСПЕЛА (Dispellable Debuffs)
+ns.cfg.dispelSize = 40             -- Размер индикатора
+ns.cfg.dispelPoint = "BOTTOMRIGHT" -- Место привязки
+ns.cfg.dispelX = -2                -- Смещение влево
+ns.cfg.dispelY = 2                 -- Смещение вверх
+ns.cfg.dispelGrow = "LEFT"         -- Рост влево
+ns.cfg.dispelSpacing = 2
