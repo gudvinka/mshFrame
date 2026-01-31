@@ -99,13 +99,12 @@ hooksecurefunc("CompactUnitFrame_UpdateAll", function(frame)
     ApplyMshStyle(frame)
 end)
 
+hooksecurefunc("CompactUnitFrame_UpdateStatusText", function(frame)
+    if frame.mshLayersCreated then
+        msh.UpdateLayers(frame)
+    end
+end)
+
 -- Команда перезагрузки
 SLASH_RELOADUI1 = "/rl"
 SlashCmdList["RELOADUI"] = function() ReloadUI() end
-
-
--- Принт для проверки (он подтвердит, что до этой строки код дошел)
-print("|cff00ff00mshFrame:|r Конфиг применен через /reload поставил " .. msh.cfg.hpMode)
-
--- Для принтов тоже используем полный путь msh.cfg
-print("|cff00ff00mshFrame:|r Загружен. Режим цвета: " .. (msh.cfg.useClassColors and "Класс" or "Статичный"))
