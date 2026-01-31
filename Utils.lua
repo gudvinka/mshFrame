@@ -4,45 +4,67 @@ local cfg = msh.cfg
 
 -- 1. БЕЗОПАСНОЕ СОКРАЩЕНИЕ ХП [cite: 2026-01-29]
 function msh.FormatValue(val)
-    -- Используем pcall, чтобы защищенные значения не "крашили" аддон [cite: 2026-01-29]
-    local success, text = pcall(function()
-        if not val or type(val) ~= "number" then return "---" end
-
-        if val >= 1e6 then
-            return string.format("%.1fM", val / 1e6)
-        elseif val >= 1e3 then
-            return string.format("%.1fK", val / 1e3)
-        else
-            return tostring(math.floor(val))
-        end
-    end)
-
-    if success then
-        return text
-    else
-        -- Специальный маркер для понимания, что сработал fallback [cite: 2026-01-29]
-        return "eror"
+    -- val здесь — это уже готовая строка от Blizzard (например, "1.5M")
+    if not val or val == "" then
+        return ""
     end
+
+    -- Просто возвращаем то, что дала игра, без всяких вычислений
+    return tostring(val)
 end
 
 -- 2. ОБРЕЗКА СЕРВЕРА (уже проверено, оставляем) [cite: 2026-01-29]
+-- Utils.lua
 function msh.GetShortName(unit)
-    if not unit then return "Unknown" end
-    local success, fullName = pcall(GetUnitName, unit, true)
-    if success and type(fullName) == "string" then
-        local shortName = string.match(fullName, "([^%-]+)")
-        return shortName or fullName
+    if not unit then return "" end
+
+    local name = GetUnitName(unit, true) or ""
+    -- 1. Убираем сервер
+    name = string.match(name, "([^%-]+)") or name
+
+    -- 2. Обрезка
+    if ns.cfg.shortenNames then
+        local maxChars = ns.cfg.nameLength or 5
+
+        -- Проверяем длину в СИМВОЛАХ (strlenutf8 всегда доступна в WoW)
+        if strlenutf8(name) > maxChars then
+            local bytes = #name
+            local charCount = 0
+            local pos = 1
+
+            -- Итерируем по байтам, пока не наберем нужное кол-во символов
+            while pos <= bytes and charCount < maxChars do
+                local b = string.byte(name, pos)
+                if not b then break end
+
+                if b < 128 then
+                    pos = pos + 1 -- Латиница (1 байт)
+                elseif b < 224 then
+                    pos = pos + 2 -- Кириллица (2 байта)
+                elseif b < 240 then
+                    pos = pos + 3 -- Редкие символы (3 байта)
+                else
+                    pos = pos + 4 -- Эмодзи/прочее (4 байта)
+                end
+                charCount = charCount + 1
+            end
+
+            -- Обрезаем строку по найденной позиции байта
+            -- (Если хочешь убрать первый символ, можно сдвинуть начало обрезки)
+            name = string.sub(name, 1, pos - 1)
+        end
     end
-    return "Protected"
+
+    return name
 end
 
--- 3. ЦВЕТ КЛАССА [cite: 2026-01-29]
-function msh.GetClassColor(unit)
-    if not unit then return 1, 1, 1 end
-    local _, class = UnitClass(unit)
-    if class and RAID_CLASS_COLORS[class] then
-        local c = RAID_CLASS_COLORS[class]
-        return c.r, c.g, c.b
-    end
-    return 1, 1, 1
-end
+-- -- 3. ЦВЕТ КЛАССА [cite: 2026-01-29]
+-- function msh.GetClassColor(unit)
+--     if not unit then return 1, 1, 1 end
+--     local _, class = UnitClass(unit)
+--     if class and RAID_CLASS_COLORS[class] then
+--         local c = RAID_CLASS_COLORS[class]
+--         return c.r, c.g, c.b
+--     end
+--     return 1, 1, 1
+-- end

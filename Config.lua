@@ -13,6 +13,8 @@ ns.cfg.fontSizeName = 12
 ns.cfg.namePoint = "TOPLEFT"
 ns.cfg.nameX = 20
 ns.cfg.nameY = -4
+ns.cfg.nameLength = 6      -- До какого символа обрезать имя
+ns.cfg.shortenNames = true -- enable cut
 
 -- 3. НАСТРОЙКИ ХП (СТАТУСА)
 ns.cfg.fontSizeStatus = 12
@@ -27,6 +29,3 @@ ns.cfg.hpMode = "VALUE"
 -- 4. ЦВЕТА
 -- ns.cfg.useClassColors = true
 -- ns.cfg.staticColor = { 0.00, 1.00, 0.59 } -- monk
-
--- 5. ФОРМАТИРОВАНИЕ
-ns.cfg.shortenNames = true -- Исправлено: теперь ns.cfg

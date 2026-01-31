@@ -38,28 +38,26 @@ end
 function msh.UpdateLayers(frame)
     if not frame or not frame.mshLayersCreated then return end
 
-    -- Используем displayedUnit (важно для техники и фазирования)
     local unit = frame.displayedUnit or frame.unit
     if not unit or not UnitExists(unit) then return end
 
-    -- 1. Имена
+    -- 1. Имя (обрезаем своей функцией)
     frame.mshName:SetText(msh.GetShortName(unit))
 
-    -- 2. ХП (Копируем текст Blizzard, чтобы избежать ошибок "Protected Value")
+    -- 2. ХП (Метод "Зеркало")
     if ns.cfg.hpMode == "NONE" then
         frame.mshHP:SetText("")
     else
+        -- Просто берем текст, который УЖЕ написали Blizzard
+        -- Мы его не видим (так как Alpha = 0), но текст там есть!
         if frame.statusText then
-            -- statusText обновляется Blizzard автоматически, мы просто транслируем результат
-            frame.mshHP:SetText(frame.statusText:GetText() or "")
+            local blizzardText = frame.statusText:GetText() or ""
+            frame.mshHP:SetText(blizzardText)
         end
     end
 
-    -- 3. КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Принудительный подъем иконки роли
-    -- Blizzard часто сбрасывает DrawLayer при изменении состава группы
+    -- 3. Роль
     if frame.roleIcon and frame.roleIcon:IsShown() then
-        if frame.roleIcon:GetDrawLayer() ~= "OVERLAY" then
-            frame.roleIcon:SetDrawLayer("OVERLAY", 7)
-        end
+        frame.roleIcon:SetDrawLayer("OVERLAY", 7)
     end
 end
