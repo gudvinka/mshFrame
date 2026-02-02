@@ -1,0 +1,33 @@
+## Interface: 120000
+# Версия Midnight (12.0). Проверка: /run print(GetBuildInfo())
+## Title: mshFrame
+## Notes: Customization default Blizzard raid frames '/msh'
+## Version: 0.4
+## Author: gudvinka
+## SavedVariables: mshFrameDB
+## IconTexture: Interface\AddOns\mshFrame\Media\ggg
+
+
+# 1. LibStub (самый первый)
+Libs\LibSharedMedia-3.0\LibStub\LibStub.lua
+
+# 2. CallbackHandler (нужен для Ace3)
+Libs\Ace3\CallbackHandler-1.0\CallbackHandler-1.0.xml
+
+# 3. Базовые библиотеки Ace3
+Libs\Ace3\AceDB-3.0\AceDB-3.0.xml
+Libs\Ace3\AceGUI-3.0\AceGUI-3.0.xml
+Libs\Ace3\AceConfig-3.0\AceConfig-3.0.xml
+Libs\Ace3\AceDBOptions-3.0\AceDBOptions-3.0.xml
+
+# 4. ТОТ САМЫЙ ВИДЖЕТ (указываем путь прямо к XML)
+Libs\Ace3\AceGUI-3.0-SharedMediaWidgets\widget.xml
+
+# 5. SharedMedia
+Libs\LibSharedMedia-3.0\lib.xml
+
+# Логика
+Config.lua
+Utils.lua
+CustomLayers.lua
+Core.lua
