@@ -1,9 +1,14 @@
 local addonName, ns = ...
 local msh = ns
+local AceConfig = LibStub("AceConfig-3.0")
+local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local LSM = LibStub("LibSharedMedia-3.0")
 ns.needsReload = false
 
--- СПИСКИ ДЛЯ ДРОПДАУНОВ
+-- Регистрация своего шрифта (как у тебя и было)
+LSM:Register("font", "Montserrat-SemiBold", [[Interface\AddOns\mshFrame\Media\Montserrat-SemiBold.ttf]])
+
+-- СПИСКИ ДЛЯ ВЫПАДАЮЩИХ МЕНЮ
 local anchorPoints = {
     ["TOPLEFT"] = "Сверху слева",
     ["TOP"] = "Сверху",
@@ -17,84 +22,72 @@ local anchorPoints = {
 }
 
 local outlineModes = {
-    ["NONE"] = "Нет",
-    ["OUTLINE"] = "Тонкий",
-    ["THICKOUTLINE"] = "Жирный",
-    ["MONOCHROME"] = "Пиксельный",
+    ["NONE"] = "Нет", ["OUTLINE"] = "Тонкий", ["THICKOUTLINE"] = "Жирный", ["MONOCHROME"] = "Пиксельный",
 }
 
+-- Функция обновления фреймов при изменении настроек
 local function Refresh()
+    local function UpdateFrame(frame)
+        if not frame or frame:IsForbidden() then return end
+
+        -- Вызываем обновления из НОВЫХ модулей
+        if msh.UpdateUnitDisplay then msh.UpdateUnitDisplay(frame) end
+        if msh.UpdateHealthDisplay then msh.UpdateHealthDisplay(frame) end
+        if msh.UpdateAuras then msh.UpdateAuras(frame) end
+    end
+
     if CompactRaidFrameContainer and CompactRaidFrameContainer.flowFrames then
-        for _, frame in ipairs(CompactRaidFrameContainer.flowFrames) do
-            if type(frame) == "table" and frame.mshLayersCreated then msh.UpdateLayers(frame) end
-        end
+        for _, frame in ipairs(CompactRaidFrameContainer.flowFrames) do UpdateFrame(frame) end
     end
     for i = 1, 5 do
-        local frame = _G["CompactPartyFrameMember" .. i]
-        if frame and frame:IsShown() and frame.mshLayersCreated then msh.UpdateLayers(frame) end
+        UpdateFrame(_G["CompactPartyFrameMember" .. i])
     end
 end
 
+-- ДЕФОЛТНЫЕ НАСТРОЙКИ
 ns.defaults = {
     profile = {
         texture = "Perl",
         fontName = "Montserrat-SemiBold",
-        fontSizeName = 12,
-        nameOutline = "OUTLINE",
-        namePoint = "TOPLEFT",
-        nameX = 20,
-        nameY = -4,
+        fontSize = 12,
+        fontOutline = "OUTLINE",
+
+        -- Имя
         shortenNames = true,
         nameLength = 6,
-        fontStatus = "Montserrat-SemiBold",
-        fontSizeStatus = 12,
-        statusOutline = "OUTLINE",
-        statusPoint = "BOTTOMLEFT",
-        statusX = 4,
-        statusY = 4,
-        hpMode = "VALUE",
-        showRoleIcon = true,
-        roleIconSize = 30,
+        namePoint = "CENTER",
+        nameX = 0,
+        nameY = 0,
+
+        -- Здоровье (CVars)
+        hpMode = "PERCENT",
+
+        -- Роли и метки
+        showRole = true,
+        roleIconSize = 12,
         roleIconPoint = "TOPLEFT",
-        roleIconX = 4,
-        roleIconY = -4,
-        raidMarkSize = 30,
+        roleIconX = 2,
+        roleIconY = -2,
+
+        showRaidMark = true,
+        raidMarkSize = 14,
         raidMarkPoint = "TOP",
         raidMarkX = 0,
-        raidMarkY = -15,
-        auraSize = 20,
-        auraPoint = "TOPLEFT",
-        auraX = 0,
-        auraY = 0,
+        raidMarkY = -2,
+
+        -- Ауры (базовая часть)
+        showBuffs = true,
+        auraSize = 18,
+        auraPoint = "BOTTOMLEFT",
+        auraX = 2,
+        auraY = 2,
         auraGrow = "RIGHT",
         auraSpacing = 2,
-        debuffSize = 20,
-        debuffPoint = "BOTTOMRIGHT",
-        debuffX = 1,
-        debuffY = 1,
-        buffTextScale = 0.6,
-        debuffTextScale = 0.6,
-        saveTextScale = 0.6,
-        showBigSave = true,
         showbuffTimer = true,
-        showDebuffTimer = true,
-        showDispel = true,
-        bigSaveSize = 40,
-        bigSavePoint = "CENTER",
-        bigSaveX = 0,
-        bigSaveY = 0,
-        bigSaveTextScale = 0.8,
-        showBigSaveTimer = true,
-        dispelPoint = "TOPRIGHT",
-        dispelX = 0,
-        dispelY = 0,
-        dispelSize = 30,
-        showOnlyDispellable = true,
-
     }
 }
 
--- ОПЦИИ
+-- ТАБЛИЦА ОПЦИЙ (AceConfig)
 ns.options = {
     name = "|cffffffffmsh|rFrames",
     type = "group",
@@ -933,3 +926,34 @@ ns.options = {
         },
     }
 }
+
+
+-- ИНИЦИАЛИЗАЦИЯ (Запускается AceAddon-ом)
+function msh:OnInitialize()
+    -- Загружаем БД
+    self.db = LibStub("AceDB-3.0"):New("mshFrameDB", ns.defaults, true)
+    ns.cfg = self.db.profile
+
+    -- Регистрируем меню
+    AceConfig:RegisterOptionsTable("mshFrame", ns.options)
+    self.optionsFrame = AceConfigDialog:AddToBlizOptions("mshFrame", "mshFrame")
+
+    -- Регистрируем команду
+    SLASH_MSH1 = "/msh"
+    SlashCmdList["MSH"] = function() AceConfigDialog:Open("mshFrame") end
+
+    print("|cff00ff00mshFrame v0.5 загружен!|r /msh для настроек.")
+end
+
+-- СИНХРОНИЗАЦИЯ С CVARS (Системные настройки)
+function msh.SyncBlizzardSettings()
+    if not ns.cfg then return end
+    local mode = ns.cfg.hpMode
+    if mode == "VALUE" then
+        SetCVar("raidFramesHealthText", "health")
+    elseif mode == "PERCENT" then
+        SetCVar("raidFramesHealthText", "perc")
+    else
+        SetCVar("raidFramesHealthText", "none")
+    end
+end

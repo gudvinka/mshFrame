@@ -1,6 +1,5 @@
 local addonName, ns = ...
 local msh = ns
-local cfg = msh.cfg
 
 -- СОКРАЩЕНИЕ ХП
 function msh.FormatValue(val)
@@ -12,7 +11,7 @@ function msh.FormatValue(val)
     return tostring(val)
 end
 
--- ОБРЕЗКА СЕРВЕРА
+-- ОБРЕЗКА ИМЕНИ (UTF-8)
 function msh.GetShortName(unit)
     if not unit then return "" end
 
