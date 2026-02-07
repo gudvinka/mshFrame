@@ -9,9 +9,12 @@ function msh.GetShortName(unit)
     -- сервер
     name = string.match(name, "([^%-]+)") or name
 
+    local cfg = ns.cfg
+    if not cfg then return name end -- Если конфиг еще не прогружен, возвращаем полное имя
+
     -- Обрезка
-    if ns.cfg.shortenNames then
-        local maxChars = ns.cfg.nameLength or 10
+    if cfg.shortenNames then
+        local maxChars = cfg.nameLength or 10
         if strlenutf8(name) > maxChars then
             local bytes, charCount, pos = #name, 0, 1
             while pos <= bytes and charCount < maxChars do
@@ -31,5 +34,6 @@ function msh.GetShortName(unit)
             name = string.sub(name, 1, pos - 1)
         end
     end
+
     return name
 end

@@ -1,5 +1,6 @@
 local _, ns = ...
 local msh = ns
+local LSM = LibStub("LibSharedMedia-3.0")
 
 function msh.CreateHealthLayers(frame)
     if frame.mshHealthCreated then return end
@@ -19,8 +20,8 @@ function msh.UpdateHealthDisplay(frame)
     msh.CreateHealthLayers(frame)
 
     -- 1. Текстура полоски
-    local LSM = LibStub("LibSharedMedia-3.0")
-    frame.healthBar:SetStatusBarTexture(LSM:Fetch("statusbar", cfg.texture))
+    local texture = LSM:Fetch("statusbar", cfg.texture)
+    frame.healthBar:SetStatusBarTexture(texture)
 
     -- 2. Логика отображения ХП
     if cfg.hpMode == "NONE" then
@@ -28,10 +29,11 @@ function msh.UpdateHealthDisplay(frame)
     else
         -- Вместо вычислений просто берем то, что Blizzard уже подготовила в своем скрытом statusText
         local blizzText = frame.statusText and frame.statusText:GetText() or ""
+        local font = LSM:Fetch("font", cfg.fontStatus)
 
-        frame.mshHP:SetFont(LSM:Fetch("font", cfg.fontStatus), cfg.fontSizeStatus, cfg.statusOutline)
+        frame.mshHP:SetFont(font, cfg.fontSizeStatus, cfg.statusOutline)
         frame.mshHP:ClearAllPoints()
-        frame.mshHP:SetPoint(cfg.statusPoint or "BOTTOMRIGHT", frame, cfg.statusX or 0, cfg.statusY or 0)
+        frame.mshHP:SetPoint(cfg.statusPoint or "TOP", frame, cfg.statusX or 0, cfg.statusY or 0)
 
         frame.mshHP:SetText(blizzText)
         frame.mshHP:Show()
