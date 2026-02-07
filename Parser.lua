@@ -6,8 +6,12 @@ function msh.GetShortName(unit)
     if not unit then return "" end
 
     local name = GetUnitName(unit, false) or ""
-    -- сервер
-    name = string.match(name, "([^%-]+)") or name
+
+    -- .match(name, "([^%-]+)") or name
+
+    if UnitIsPlayer(unit) then
+        name = Ambiguate(name, "none")
+    end
 
     local cfg = ns.cfg
     if not cfg then return name end -- Если конфиг еще не прогружен, возвращаем полное имя

@@ -6,6 +6,14 @@ local LSM = LibStub("LibSharedMedia-3.0")
 
 ns.needsReload = false
 
+local reloadWarning = {
+    type = "description",
+    name = "\n|cffff0000ВНИМАНИЕ:|r Требуется |cffffff00/reload|r для применения настроек.\n",
+    fontSize = "medium",
+    order = 0, -- Всегда сверху
+    hidden = function() return not ns.needsReload end,
+}
+
 -- СПИСКИ ДЛЯ ВЫПАДАЮЩИХ МЕНЮ
 local anchorPoints = {
     ["TOPLEFT"] = "Сверху слева",
@@ -18,6 +26,48 @@ local anchorPoints = {
     ["BOTTOM"] = "Снизу",
     ["BOTTOMRIGHT"] = "Снизу справа",
 }
+
+local function AddAuraControls(args, path, key, label, customColor)
+    local toggleKey = "show" .. key
+    local blizzKey = "useBlizz" .. key
+    local customKey = "showCustom" .. key
+
+    args[toggleKey] = {
+        type = "toggle",
+        name = "Включить",
+        order = 1,
+        get = function() return path[toggleKey] end,
+        set = function(_, v)
+            path[toggleKey] = v; ns.needsReload = true; LibStub("AceConfigRegistry-3.0"):NotifyChange("mshFrame");
+        end
+    }
+    args[blizzKey] = {
+        type = "toggle",
+        order = 2,
+        name = function()
+            local color = customColor or "|cff00ffff" -- Цвет по умолчанию (лазурный), если забыл передать
+            return (not path[toggleKey] or path[customKey]) and "Стандарт Blizzard" or "|cff00ff00Стандарт Blizzard|r"
+        end,
+        disabled = function() return not path[toggleKey] or path[customKey] end,
+        get = function() return path[blizzKey] end,
+        set = function(_, v)
+            path[blizzKey] = v; ns.needsReload = true; LibStub("AceConfigRegistry-3.0"):NotifyChange("mshFrame");
+        end
+    }
+    args[customKey] = {
+        type = "toggle",
+        order = 3,
+        name = function()
+            local color = customColor or "|cff00ffff" -- Цвет по умолчанию (лазурный), если забыл передать
+            return (not path[toggleKey] or path[blizzKey]) and "Кастомные ауры" or color .. "Кастомные ауры|r"
+        end,
+        disabled = function() return not path[toggleKey] or path[blizzKey] end,
+        get = function() return path[customKey] end,
+        set = function(_, v)
+            path[customKey] = v; ns.needsReload = true; LibStub("AceConfigRegistry-3.0"):NotifyChange("mshFrame");
+        end
+    }
+end
 
 local outlineModes = {
     ["NONE"] = "Нет", ["OUTLINE"] = "Тонкий", ["THICKOUTLINE"] = "Жирный", ["MONOCHROME"] = "Пиксельный",
@@ -36,7 +86,465 @@ end
 
 -- Функция-шаблон для генерации вложенных групп
 local function GetUnitGroups(path)
+    local buffsArgs = {
+        warning = reloadWarning,
+        auraSize = {
+            type = "range",
+            name = "Размер",
+            order = 10,
+            min = 8,
+            max = 40,
+            step = 1,
+            disabled = function() return not path.showBuffs end,
+            get = function()
+                return
+                    path.auraSize
+            end,
+            set = function(_, v)
+                path.auraSize = v; Refresh()
+            end
+        },
+        auraPoint = {
+            type = "select",
+            name = "Якорь",
+            order = 11,
+            values = anchorPoints,
+            disabled = function()
+                return not path.showCustomBuffs or path.useBlizzBuffs or
+                    not path.showBuffs
+            end,
+            get = function()
+                return
+                    path.auraPoint
+            end,
+            set = function(_, v)
+                path.auraPoint = v; Refresh()
+            end
+        },
+        auraX = {
+            type = "range",
+            name = "X",
+            order = 12,
+            min = -100,
+            max = 100,
+            step = 1,
+            disabled = function()
+                return not path.showCustomBuffs or path.useBlizzBuffs or
+                    not path.showBuffs
+            end,
+            get = function()
+                return
+                    path.auraX
+            end,
+            set = function(_, v)
+                path.auraX = v; Refresh()
+            end
+        },
+        auraY = {
+            type = "range",
+            name = "Y",
+            order = 13,
+            min = -100,
+            max = 100,
+            step = 1,
+            disabled = function()
+                return not path.showCustomBuffs or path.useBlizzBuffs or
+                    not path.showBuffs
+            end,
+            get = function()
+                return
+                    path.auraY
+            end,
+            set = function(_, v)
+                path.auraY = v; Refresh()
+            end
+        },
+        auraGrow = {
+            type = "select",
+            name = "Рост",
+            order = 14,
+            values = { ["LEFT"] = "Влево", ["RIGHT"] = "Вправо", ["UP"] = "Вверх", ["DOWN"] = "Вниз" },
+            disabled = function()
+                return not path.showCustomBuffs or path.useBlizzBuffs or
+                    not path.showBuffs
+            end,
+            get = function()
+                return
+                    path.auraGrow
+            end,
+            set = function(_, v)
+                path.auraGrow = v; Refresh()
+            end
+        },
+        auraSpacing = {
+            type = "range",
+            name = "Отступ",
+            order = 15,
+            min = 0,
+            max = 10,
+            step = 1,
+            disabled = function()
+                return not path.showCustomBuffs or path.useBlizzBuffs or
+                    not path.showBuffs
+            end,
+            get = function()
+                return
+                    path.auraSpacing
+            end,
+            set = function(_, v)
+                path.auraSpacing = v; Refresh()
+            end
+        },
+        showbuffTimer = {
+            type = "toggle",
+            name = "Таймер",
+            order = 16,
+            disabled = function() return not path.showBuffs end,
+            get = function() return path.showbuffTimer end,
+            set = function(_, v)
+                path.showbuffTimer = v; Refresh()
+            end
+        },
+        buffTextScale = {
+            type = "range",
+            name = "Масштаб текста",
+            order = 17,
+            min = 0.5,
+            max = 2,
+            step = 0.1,
+            disabled = function()
+                return not path.showCustomBuffs or path.useBlizzBuffs or
+                    not path.showBuffs
+            end,
+            get = function()
+                return
+                    path.buffTextScale
+            end,
+            set = function(_, v)
+                path.buffTextScale = v; Refresh()
+            end
+        },
+    }
+    AddAuraControls(buffsArgs, path, "Buffs", "|cff00ffff")
+
+    local debuffsArgs = {
+        warning = reloadWarning,
+        showOnlyDispellable = {
+            type = "toggle",
+            name = "Только рассеиваемые",
+            desc = "Показывать только те дебаффы, которые вы можете снять своим классом.",
+            order = 10,
+            disabled = function() return not path.showDebuffs end,
+            get = function() return msh.db.profile.global.showOnlyDispellable end,
+            set = function(_, v)
+                msh.db.profile.global.showOnlyDispellable = v
+                msh.SyncBlizzardSettings() -- Вызываем синхронизацию CVar
+                ns.needsReload = true
+                LibStub("AceConfigRegistry-3.0"):NotifyChange("mshFrame")
+                Refresh()
+            end,
+        },
+        debuffSize = {
+            type = "range",
+            name = "Размер",
+            order = 11,
+            min = 8,
+            max = 40,
+            step = 1,
+            get = function()
+                return
+                    path.debuffSize
+            end,
+            set = function(_, v)
+                path.debuffSize = v; Refresh()
+            end
+        },
+        debuffPoint = {
+            type = "select",
+            name = "Якорь",
+            order = 12,
+            values = anchorPoints,
+            disabled = function()
+                return not path.showDebuffs or path.useBlizzDebuffs or not path.showCustomDebuffs
+            end,
+            get = function()
+                return
+                    path.debuffPoint
+            end,
+            set = function(_, v)
+                path.debuffPoint = v; Refresh()
+            end
+        },
+        debuffX = {
+            type = "range",
+            name = "X",
+            order = 13,
+            min = -100,
+            max = 100,
+            step = 1,
+            disabled = function()
+                return not path.showDebuffs or path.useBlizzDebuffs or not path.showCustomDebuffs
+            end,
+            get = function()
+                return
+                    path.debuffX
+            end,
+            set = function(_, v)
+                path.debuffX = v; Refresh()
+            end
+        },
+        debuffY = {
+            type = "range",
+            name = "Y",
+            order = 14,
+            min = -100,
+            max = 100,
+            step = 1,
+            disabled = function()
+                return not path.showDebuffs or path.useBlizzDebuffs or not path.showCustomDebuffs
+            end,
+            get = function()
+                return
+                    path.debuffY
+            end,
+            set = function(_, v)
+                path.debuffY = v; Refresh()
+            end
+        },
+        debuffGrow = {
+            type = "select",
+            name = "Рост",
+            order = 15,
+            values = { ["LEFT"] = "Влево", ["RIGHT"] = "Вправо", ["UP"] = "Вверх", ["DOWN"] = "Вниз" },
+            disabled = function()
+                return not path.showDebuffs or path.useBlizzDebuffs or not path.showCustomDebuffs
+            end,
+            get = function()
+                return
+                    path.debuffGrow
+            end,
+            set = function(_, v)
+                path.debuffGrow = v; Refresh()
+            end
+        },
+        debuffSpacing = {
+            type = "range",
+            name = "Отступ",
+            order = 16,
+            min = 0,
+            max = 10,
+            step = 1,
+            disabled = function()
+                return not path.showDebuffs or path.useBlizzDebuffs or not path.showCustomDebuffs
+            end,
+            get = function()
+                return
+                    path.debuffSpacing
+            end,
+            set = function(_, v)
+                path.debuffSpacing = v; Refresh()
+            end
+        },
+        showDebuffTimer = {
+            type = "toggle",
+            name = "Таймер",
+            order = 17,
+            get = function()
+                return
+                    path.showDebuffTimer
+            end,
+            set = function(_, v)
+                path.showDebuffTimer = v; Refresh()
+            end
+        },
+        debuffTextScale = {
+            type = "range",
+            name = "Масштаб текста",
+            order = 18,
+            min = 0.5,
+            max = 2,
+            step = 0.1,
+            disabled = function()
+                return not path.showDebuffs or path.useBlizzDebuffs or not path.showCustomDebuffs
+            end,
+            get = function()
+                return
+                    path.debuffTextScale
+            end,
+            set = function(_, v)
+                path.debuffTextScale = v; Refresh()
+            end
+        },
+    }
+    AddAuraControls(debuffsArgs, path, "Debuffs", "|cffff00ff")
+
+    local dispelsArgs = {
+        dispelSize = {
+            type = "range",
+            name = "Размер",
+            order = 10,
+            min = 8,
+            max = 40,
+            step = 1,
+            get = function()
+                return
+                    path.dispelSize
+            end,
+            set = function(_, v)
+                path.dispelSize = v; Refresh()
+            end
+        },
+        dispelPoint = {
+            type = "select",
+            name = "Якорь",
+            order = 11,
+            values = anchorPoints,
+            get = function()
+                return
+                    path.dispelPoint
+            end,
+            set = function(_, v)
+                path.dispelPoint = v; Refresh()
+            end
+        },
+        dispelX = {
+            type = "range",
+            name = "X",
+            order = 12,
+            min = -100,
+            max = 100,
+            step = 1,
+            get = function()
+                return
+                    path.dispelX
+            end,
+            set = function(_, v)
+                path.dispelX = v; Refresh()
+            end
+        },
+        dispelY = {
+            type = "range",
+            name = "Y",
+            order = 13,
+            min = -100,
+            max = 100,
+            step = 1,
+            get = function()
+                return
+                    path.dispelY
+            end,
+            set = function(_, v)
+                path.dispelY = v; Refresh()
+            end
+        },
+
+    }
+    AddAuraControls(dispelsArgs, path, "Dispels", "|cffff00ff")
+
+    local bigSaveArgs = {
+        warning = reloadWarning,
+        showBigSaveTimer = {
+            type = "toggle",
+            name = "Таймер",
+            order = 10,
+            get = function()
+                return
+                    path.showBigSaveTimer
+            end,
+            set = function(_, v)
+                path.showBigSaveTimer = v; Refresh()
+            end
+        },
+        bigSaveSize = {
+            type = "range",
+            name = "Размер",
+            order = 11,
+            min = 10,
+            max = 60,
+            step = 1,
+            get = function()
+                return
+                    path.bigSaveSize
+            end,
+            set = function(_, v)
+                path.bigSaveSize = v; Refresh()
+            end
+        },
+        bigSavePoint = {
+            type = "select",
+            name = "Якорь",
+            order = 12,
+            values = anchorPoints,
+            disabled = function()
+                return not path.showBigSave or path.useBlizzBigSave or not path.showBigSave
+            end,
+            get = function()
+                return
+                    path.bigSavePoint
+            end,
+            set = function(_, v)
+                path.bigSavePoint = v; Refresh()
+            end
+        },
+        bigSaveX = {
+            type = "range",
+            name = "X",
+            order = 13,
+            min = -100,
+            max = 100,
+            step = 1,
+            disabled = function()
+                return not path.showBigSave or path.useBlizzBigSave or not path.showBigSave
+            end,
+            get = function()
+                return
+                    path.bigSaveX
+            end,
+            set = function(_, v)
+                path.bigSaveX = v; Refresh()
+            end
+        },
+        bigSaveY = {
+            type = "range",
+            name = "Y",
+            order = 14,
+            min = -100,
+            max = 100,
+            step = 1,
+            disabled = function()
+                return not path.showBigSave or path.useBlizzBigSave or not path.showBigSave
+            end,
+            get = function()
+                return
+                    path.bigSaveY
+            end,
+            set = function(_, v)
+                path.bigSaveY = v; Refresh()
+            end
+        },
+        bigSaveTextScale = {
+            type = "range",
+            name = "Масштаб текста",
+            order = 15,
+            min = 0.5,
+            max = 2,
+            step = 0.1,
+            get = function()
+                return
+                    path.bigSaveTextScale
+            end,
+            set = function(_, v)
+                path.bigSaveTextScale = v; Refresh()
+            end
+        },
+
+
+    }
+    AddAuraControls(bigSaveArgs, path, "BigSave", "|cffff0000")
+
+
     return {
+
         general = {
             name = "Общие",
             type = "group",
@@ -238,469 +746,10 @@ local function GetUnitGroups(path)
             type = "group",
             order = 4,
             args = {
-                buffs = {
-                    name = "Баффы",
-                    type = "group",
-                    order = 1,
-                    args = {
-                        showBuffs = {
-                            type = "toggle",
-                            name = "Включить",
-                            order = 1,
-                            get = function()
-                                return path
-                                    .showBuffs
-                            end,
-                            set = function(_, v)
-                                path.showBuffs = v; Refresh()
-                            end
-                        },
-                        auraSize = {
-                            type = "range",
-                            name = "Размер",
-                            order = 2,
-                            min = 8,
-                            max = 40,
-                            step = 1,
-                            get = function()
-                                return
-                                    path.auraSize
-                            end,
-                            set = function(_, v)
-                                path.auraSize = v; Refresh()
-                            end
-                        },
-                        auraPoint = {
-                            type = "select",
-                            name = "Якорь",
-                            order = 3,
-                            values = anchorPoints,
-                            get = function()
-                                return
-                                    path.auraPoint
-                            end,
-                            set = function(_, v)
-                                path.auraPoint = v; Refresh()
-                            end
-                        },
-                        auraX = {
-                            type = "range",
-                            name = "X",
-                            order = 4,
-                            min = -100,
-                            max = 100,
-                            step = 1,
-                            get = function()
-                                return
-                                    path.auraX
-                            end,
-                            set = function(_, v)
-                                path.auraX = v; Refresh()
-                            end
-                        },
-                        auraY = {
-                            type = "range",
-                            name = "Y",
-                            order = 5,
-                            min = -100,
-                            max = 100,
-                            step = 1,
-                            get = function()
-                                return
-                                    path.auraY
-                            end,
-                            set = function(_, v)
-                                path.auraY = v; Refresh()
-                            end
-                        },
-                        auraGrow = {
-                            type = "select",
-                            name = "Рост",
-                            order = 6,
-                            values = { ["LEFT"] = "Влево", ["RIGHT"] = "Вправо", ["UP"] = "Вверх", ["DOWN"] = "Вниз" },
-                            get = function()
-                                return
-                                    path.auraGrow
-                            end,
-                            set = function(_, v)
-                                path.auraGrow = v; Refresh()
-                            end
-                        },
-                        auraSpacing = {
-                            type = "range",
-                            name = "Отступ",
-                            order = 7,
-                            min = 0,
-                            max = 10,
-                            step = 1,
-                            get = function()
-                                return
-                                    path.auraSpacing
-                            end,
-                            set = function(_, v)
-                                path.auraSpacing = v; Refresh()
-                            end
-                        },
-                        showbuffTimer = {
-                            type = "toggle",
-                            name = "Таймер",
-                            order = 8,
-                            get = function()
-                                return path
-                                    .showbuffTimer
-                            end,
-                            set = function(_, v)
-                                path.showbuffTimer = v; Refresh()
-                            end
-                        },
-                        buffTextScale = {
-                            type = "range",
-                            name = "Масштаб текста",
-                            order = 9,
-                            min = 0.5,
-                            max = 2,
-                            step = 0.1,
-                            get = function()
-                                return
-                                    path.buffTextScale
-                            end,
-                            set = function(_, v)
-                                path.buffTextScale = v; Refresh()
-                            end
-                        },
-                    }
-                },
-                debuffs = {
-                    name = "Дебаффы",
-                    type = "group",
-                    order = 2,
-                    args = {
-                        showDebuffs = {
-                            type = "toggle",
-                            name = "Включить",
-                            order = 1,
-                            get = function()
-                                return path
-                                    .showDebuffs
-                            end,
-                            set = function(_, v)
-                                path.showDebuffs = v
-                                if msh.SyncBlizzardSettings then
-                                    msh.SyncBlizzardSettings()
-                                end
-                                ns.needsReload = true
-                                Refresh()
-                            end
-                        },
-                        showOnlyDispellable = {
-                            type = "toggle",
-                            name = "Только диспелы",
-                            desc = "Показывать только те дебаффы, которые вы можете снять своим классом.",
-                            order = 1.1,
-                            disabled = function() return not path.showDebuffs end,
-                            get = function() return msh.db.profile.global.showOnlyDispellable end,
-                            set = function(_, v)
-                                msh.db.profile.global.showOnlyDispellable = v
-                                msh.SyncBlizzardSettings() -- Вызываем синхронизацию CVar
-                                Refresh()
-                            end,
-                        },
-                        debuffSize = {
-                            type = "range",
-                            name = "Размер",
-                            order = 2,
-                            min = 8,
-                            max = 40,
-                            step = 1,
-                            get = function()
-                                return
-                                    path.debuffSize
-                            end,
-                            set = function(_, v)
-                                path.debuffSize = v; Refresh()
-                            end
-                        },
-                        debuffPoint = {
-                            type = "select",
-                            name = "Якорь",
-                            order = 3,
-                            values = anchorPoints,
-                            get = function()
-                                return
-                                    path.debuffPoint
-                            end,
-                            set = function(_, v)
-                                path.debuffPoint = v; Refresh()
-                            end
-                        },
-                        debuffX = {
-                            type = "range",
-                            name = "X",
-                            order = 4,
-                            min = -100,
-                            max = 100,
-                            step = 1,
-                            get = function()
-                                return
-                                    path.debuffX
-                            end,
-                            set = function(_, v)
-                                path.debuffX = v; Refresh()
-                            end
-                        },
-                        debuffY = {
-                            type = "range",
-                            name = "Y",
-                            order = 5,
-                            min = -100,
-                            max = 100,
-                            step = 1,
-                            get = function()
-                                return
-                                    path.debuffY
-                            end,
-                            set = function(_, v)
-                                path.debuffY = v; Refresh()
-                            end
-                        },
-                        debuffGrow = {
-                            type = "select",
-                            name = "Рост",
-                            order = 6,
-                            values = { ["LEFT"] = "Влево", ["RIGHT"] = "Вправо" },
-                            get = function()
-                                return
-                                    path.debuffGrow
-                            end,
-                            set = function(_, v)
-                                path.debuffGrow = v; Refresh()
-                            end
-                        },
-                        debuffSpacing = {
-                            type = "range",
-                            name = "Отступ",
-                            order = 7,
-                            min = 0,
-                            max = 10,
-                            step = 1,
-                            get = function()
-                                return
-                                    path.debuffSpacing
-                            end,
-                            set = function(_, v)
-                                path.debuffSpacing = v; Refresh()
-                            end
-                        },
-                        showDebuffTimer = {
-                            type = "toggle",
-                            name = "Таймер",
-                            order = 8,
-                            get = function()
-                                return
-                                    path.showDebuffTimer
-                            end,
-                            set = function(_, v)
-                                path.showDebuffTimer = v; Refresh()
-                            end
-                        },
-                        debuffTextScale = {
-                            type = "range",
-                            name = "Масштаб текста",
-                            order = 10,
-                            min = 0.5,
-                            max = 2,
-                            step = 0.1,
-                            get = function()
-                                return
-                                    path.debuffTextScale
-                            end,
-                            set = function(_, v)
-                                path.debuffTextScale = v; Refresh()
-                            end
-                        },
-                    }
-                },
-                dispel = {
-                    name = "Диспел",
-                    type = "group",
-                    order = 3,
-                    args = {
-                        showDispel = {
-                            type = "toggle",
-                            name = "Включить",
-                            order = 1,
-                            get = function() return path.showDispel end,
-                            set = function(_, v)
-                                path.showDispel = v; Refresh()
-                            end
-                        },
-                        dispelSize = {
-                            type = "range",
-                            name = "Размер",
-                            order = 1,
-                            min = 8,
-                            max = 40,
-                            step = 1,
-                            get = function()
-                                return
-                                    path.dispelSize
-                            end,
-                            set = function(_, v)
-                                path.dispelSize = v; Refresh()
-                            end
-                        },
-                        dispelPoint = {
-                            type = "select",
-                            name = "Якорь",
-                            order = 2,
-                            values = anchorPoints,
-                            get = function()
-                                return
-                                    path.dispelPoint
-                            end,
-                            set = function(_, v)
-                                path.dispelPoint = v; Refresh()
-                            end
-                        },
-                        dispelX = {
-                            type = "range",
-                            name = "X",
-                            order = 3,
-                            min = -100,
-                            max = 100,
-                            step = 1,
-                            get = function()
-                                return
-                                    path.dispelX
-                            end,
-                            set = function(_, v)
-                                path.dispelX = v; Refresh()
-                            end
-                        },
-                        dispelY = {
-                            type = "range",
-                            name = "Y",
-                            order = 4,
-                            min = -100,
-                            max = 100,
-                            step = 1,
-                            get = function()
-                                return
-                                    path.dispelY
-                            end,
-                            set = function(_, v)
-                                path.dispelY = v; Refresh()
-                            end
-                        },
-                    }
-                },
-                bigSave = {
-                    name = "Сейв",
-                    type = "group",
-                    order = 4,
-                    args = {
-                        showBigSave = {
-                            type = "toggle",
-                            name = "Включить",
-                            order = 1,
-                            get = function() return path.showBigSave end,
-                            set = function(_, v)
-                                path.showBigSave = v;
-                                if ns.SyncBlizzardSettings then
-                                    ns.SyncBlizzardSettings()
-                                end
-                                ns.needsReload = true;
-                                Refresh()
-                            end
-                        },
-                        showBigSaveTimer = {
-                            type = "toggle",
-                            name = "Таймер",
-                            order = 8,
-                            get = function()
-                                return
-                                    path.showBigSaveTimer
-                            end,
-                            set = function(_, v)
-                                path.showBigSaveTimer = v; Refresh()
-                            end
-                        },
-                        bigSaveSize = {
-                            type = "range",
-                            name = "Размер",
-                            order = 1,
-                            min = 10,
-                            max = 60,
-                            step = 1,
-                            get = function()
-                                return
-                                    path.bigSaveSize
-                            end,
-                            set = function(_, v)
-                                path.bigSaveSize = v; Refresh()
-                            end
-                        },
-                        bigSavePoint = {
-                            type = "select",
-                            name = "Якорь",
-                            order = 2,
-                            values = anchorPoints,
-                            get = function()
-                                return
-                                    path.bigSavePoint
-                            end,
-                            set = function(_, v)
-                                path.bigSavePoint = v; Refresh()
-                            end
-                        },
-                        bigSaveX = {
-                            type = "range",
-                            name = "X",
-                            order = 3,
-                            min = -100,
-                            max = 100,
-                            step = 1,
-                            get = function()
-                                return
-                                    path.bigSaveX
-                            end,
-                            set = function(_, v)
-                                path.bigSaveX = v; Refresh()
-                            end
-                        },
-                        bigSaveY = {
-                            type = "range",
-                            name = "Y",
-                            order = 4,
-                            min = -100,
-                            max = 100,
-                            step = 1,
-                            get = function()
-                                return
-                                    path.bigSaveY
-                            end,
-                            set = function(_, v)
-                                path.bigSaveY = v; Refresh()
-                            end
-                        },
-                        bigSaveTextScale = {
-                            type = "range",
-                            name = "Масштаб текста",
-                            order = 10,
-                            min = 0.5,
-                            max = 2,
-                            step = 0.1,
-                            get = function()
-                                return
-                                    path.bigSaveTextScale
-                            end,
-                            set = function(_, v)
-                                path.bigSaveTextScale = v; Refresh()
-                            end
-                        },
-                    }
-                },
-
+                buffs = { name = "Баффы", type = "group", order = 1, args = buffsArgs },
+                debuffs = { name = "Дебаффы", type = "group", order = 2, args = debuffsArgs },
+                dispel = { name = "Диспел", type = "group", order = 3, args = dispelsArgs },
+                bigSave = { name = "Сейв", type = "group", order = 4, args = bigSaveArgs },
             }
         },
         logo = {
@@ -710,14 +759,6 @@ local function GetUnitGroups(path)
             imageWidth = 150,
             imageHeight = 150,
             order = 0,
-        },
-        warning = {
-            type = "description",
-            name =
-            "\n|cffff0000ВНИМАНИЕ:|r Вы изменили настройки, требующие перезагрузки интерфейса (|cffffff00/reload|r).",
-            fontSize = "medium",
-            order = 0.1,
-            hidden = function() return not ns.needsReload end,
         },
         raidMarks = {
             name = "Рейдовые метки",
@@ -786,6 +827,7 @@ local function GetUnitGroups(path)
             type = "group",
             order = 6,
             args = {
+                warning = reloadWarning,
                 useBlizzRole = {
                     type = "toggle",
                     name = "|cff00ff00Использовать стандарт (Blizzard)|r",
@@ -793,7 +835,10 @@ local function GetUnitGroups(path)
                     order = 0,
                     get = function(_) return path.useBlizzRole end,
                     set = function(_, v)
-                        path.useBlizzRole = v; Refresh()
+                        path.useBlizzRole = v;
+                        ns.needsReload = true
+                        LibStub("AceConfigRegistry-3.0"):NotifyChange("mshFrame")
+                        Refresh()
                     end,
                 },
                 showRoleIcon = {
@@ -864,43 +909,43 @@ end
 
 -- Дефолты
 local defaultProfile = {
+    -- Имя
     texture = "Flat",
-    globalFontName = "Montserrat-SemiBold",
     fontName = "Montserrat-SemiBold",
     fontStatus = "Montserrat-SemiBold",
-    fontSizeName = 12,
+    fontSizeName = 13,
     nameOutline = "OUTLINE",
-
-    -- Имя
     shortenNames = true,
     nameLength = 5,
-    namePoint = "CENTER",
+    namePoint = "TOP",
     nameX = 0,
-    nameY = 0,
+    nameY = -5,
 
     -- Здоровье (CVars)
     fontSizeStatus = 10,
     statusOutline = "OUTLINE",
-    statusPoint = "BOTTOMRIGHT",
+    statusPoint = "RIGHT",
     statusX = -2,
-    statusY = 2,
+    statusY = 0,
     hpMode = "PERCENT",
 
     -- Роли и метки
+    useBlizzRole = false,
     showRoleIcon = true,
-    roleIconSize = 12,
+    roleIconSize = 15,
     roleIconPoint = "TOPLEFT",
     roleIconX = 2,
     roleIconY = -2,
 
     showRaidMark = true,
-    raidMarkSize = 14,
-    raidMarkPoint = "TOP",
+    raidMarkSize = 20,
+    raidMarkPoint = "TOPRIGHT",
     raidMarkX = 0,
     raidMarkY = -2,
 
-    -- Ауры (базовая часть)
+    -- Ауры
     showBuffs = true,
+    showDebuffs = true,
     auraSize = 18,
     auraPoint = "BOTTOMLEFT",
     auraX = 2,
@@ -908,7 +953,12 @@ local defaultProfile = {
     auraGrow = "RIGHT",
     auraSpacing = 2,
     showbuffTimer = true,
-    useBlizzRole = false, -- по умолчанию выключено, используем наш кастом
+    useBlizzBuffs = false,
+    showCustomBuffs = true,
+    useBlizzDebuffs = false,
+    showCustomDebuffs = true,
+    useBlizzBigSave = false,
+    showCustomBigSave = true,
 }
 
 ns.defaults = {
@@ -988,7 +1038,10 @@ function msh:OnInitialize()
     self.optionsFrame = AceConfigDialog:AddToBlizOptions("mshFrame", "mshFrame")
 
     SLASH_MSH1 = "/msh"
-    SlashCmdList["MSH"] = function() AceConfigDialog:Open("mshFrame") end
+    SlashCmdList["MSH"] = function()
+        AceConfigDialog:SetDefaultSize("mshFrame", 1000, 600)
+        AceConfigDialog:Open("mshFrame")
+    end
 end
 
 -- СИНХРОНИЗАЦИЯ С CVARS (Системные настройки)
