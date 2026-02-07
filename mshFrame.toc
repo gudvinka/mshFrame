@@ -25,7 +25,7 @@ Libs\Ace3\AceGUI-3.0-SharedMediaWidgets\widget.xml
 
 # Логика
 Config.lua
-Utils.lua
+Parser.lua
 Modules\Units.lua
 Modules\Health.lua
 Modules\Auras.lua

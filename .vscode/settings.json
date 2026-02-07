@@ -47,6 +47,7 @@
         "PanelTemplates_SetDisabledTabState",
         "PanelTemplates_SelectTab",
         "PanelTemplates_DeselectTab",
-        "CompactUnitFrame_UpdateStatusText"
+        "CompactUnitFrame_UpdateStatusText",
+        "CompactUnitFrame_UpdateRoleIcon"
     ]
 }

@@ -3,10 +3,8 @@ local msh = ns
 local AceConfig = LibStub("AceConfig-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local LSM = LibStub("LibSharedMedia-3.0")
-ns.needsReload = false
 
--- Регистрация своего шрифта (как у тебя и было)
-LSM:Register("font", "Montserrat-SemiBold", [[Interface\AddOns\mshFrame\Media\Montserrat-SemiBold.ttf]])
+ns.needsReload = false
 
 -- СПИСКИ ДЛЯ ВЫПАДАЮЩИХ МЕНЮ
 local anchorPoints = {
@@ -28,42 +26,62 @@ local outlineModes = {
 -- Функция обновления фреймов при изменении настроек
 local function Refresh()
     local function UpdateFrame(frame)
-        if not frame or frame:IsForbidden() then return end
+        -- Проверка: что это таблица, у нее есть метод IsForbidden и она не защищена Blizzard
+        if type(frame) ~= "table" or not frame.IsForbidden or frame:IsForbidden() then
+            return
+        end
 
-        -- Вызываем обновления из НОВЫХ модулей
+        -- Вызываем обновления только если функции существуют
         if msh.UpdateUnitDisplay then msh.UpdateUnitDisplay(frame) end
         if msh.UpdateHealthDisplay then msh.UpdateHealthDisplay(frame) end
         if msh.UpdateAuras then msh.UpdateAuras(frame) end
     end
 
-    if CompactRaidFrameContainer and CompactRaidFrameContainer.flowFrames then
-        for _, frame in ipairs(CompactRaidFrameContainer.flowFrames) do UpdateFrame(frame) end
+    -- Перебор всех стандартных компактных фреймов рейда и пати
+    -- (Именно здесь летела ошибка, если в итератор попадал мусор)
+    for i = 1, 40 do
+        local raidFrame = _G["CompactRaidFrame" .. i]
+        if raidFrame then UpdateFrame(raidFrame) end
+
+        local partyFrame = _G["CompactPartyFrameMember" .. i]
+        if partyFrame then UpdateFrame(partyFrame) end
     end
-    for i = 1, 5 do
-        UpdateFrame(_G["CompactPartyFrameMember" .. i])
+
+    -- Также обновляем контейнеры, если они есть
+    if CompactRaidFrameContainer then
+        local children = { CompactRaidFrameContainer:GetChildren() }
+        for _, frame in ipairs(children) do
+            UpdateFrame(frame)
+        end
     end
 end
 
 -- ДЕФОЛТНЫЕ НАСТРОЙКИ
 ns.defaults = {
     profile = {
-        texture = "Perl",
+        texture = "Flat",
         fontName = "Montserrat-SemiBold",
-        fontSize = 12,
-        fontOutline = "OUTLINE",
+        fontStatus = "Montserrat-SemiBold",
+        fontSizeName = 12,
+        nameOutline = "OUTLINE",
 
         -- Имя
         shortenNames = true,
-        nameLength = 6,
+        nameLength = 5,
         namePoint = "CENTER",
         nameX = 0,
         nameY = 0,
 
         -- Здоровье (CVars)
+        fontSizeStatus = 10,
+        statusOutline = "OUTLINE",
+        statusPoint = "BOTTOMRIGHT",
+        statusX = -2,
+        statusY = 2,
         hpMode = "PERCENT",
 
         -- Роли и метки
-        showRole = true,
+        showRoleIcon = true,
         roleIconSize = 12,
         roleIconPoint = "TOPLEFT",
         roleIconX = 2,
@@ -84,6 +102,7 @@ ns.defaults = {
         auraGrow = "RIGHT",
         auraSpacing = 2,
         showbuffTimer = true,
+        useBlizzRole = false, -- по умолчанию выключено, используем наш кастом
     }
 }
 
@@ -648,12 +667,23 @@ ns.options = {
             type = "group",
             order = 6,
             args = {
+                useBlizzRole = {
+                    type = "toggle",
+                    name = "|cff00ff00Использовать стандарт (Blizzard)|r",
+                    desc = "Полностью отключает кастомизацию ролей и возвращает родные иконки игры.",
+                    order = 0,
+                    get = function(_) return ns.cfg.useBlizzRole end,
+                    set = function(_, v)
+                        ns.cfg.useBlizzRole = v; Refresh()
+                    end,
+                },
                 showRoleIcon = {
                     type = "toggle",
-                    name = "Включить иконки ролей",
+                    name = "Включить кастомные иконки ролей",
                     desc = "Отображает иконку танка, целителя или урона",
                     order = 1,
-                    get = function() return ns.cfg.showRoleIcon end,
+                    disabled = function() return ns.cfg.useBlizzRole end, -- Блокировка
+                    get = function(_) return ns.cfg.showRoleIcon end,
                     set = function(_, v)
                         ns.cfg.showRoleIcon = v; Refresh()
                     end,
@@ -665,6 +695,7 @@ ns.options = {
                     min = 8,
                     max = 40,
                     step = 1,
+                    disabled = function() return ns.cfg.useBlizzRole end, -- Блокировка
                     get = function() return ns.cfg.roleIconSize end,
                     set = function(_, v)
                         ns.cfg.roleIconSize = v; Refresh()
@@ -675,6 +706,7 @@ ns.options = {
                     name = "Якорь",
                     order = 3,
                     values = anchorPoints,
+                    disabled = function() return ns.cfg.useBlizzRole end, -- Блокировка
                     get = function() return ns.cfg.roleIconPoint end,
                     set = function(_, v)
                         ns.cfg.roleIconPoint = v; Refresh()
@@ -687,6 +719,7 @@ ns.options = {
                     min = -50,
                     max = 50,
                     step = 1,
+                    disabled = function() return ns.cfg.useBlizzRole end, -- Блокировка
                     get = function() return ns.cfg.roleIconX end,
                     set = function(_, v)
                         ns.cfg.roleIconX = v; Refresh()
@@ -699,6 +732,7 @@ ns.options = {
                     min = -50,
                     max = 50,
                     step = 1,
+                    disabled = function() return ns.cfg.useBlizzRole end, -- Блокировка
                     get = function() return ns.cfg.roleIconY end,
                     set = function(_, v)
                         ns.cfg.roleIconY = v; Refresh()
@@ -734,8 +768,8 @@ ns.options = {
                     type = "select",
                     name = "Шрифт имени",
                     order = 1,
+                    values = function() return LibStub("LibSharedMedia-3.0"):HashTable("font") end,
                     dialogControl = "LSM30_Font",
-                    values = AceGUIWidgetLSMlists.font,
                     get = function() return ns.cfg.fontName end,
                     set = function(_, v)
                         ns.cfg.fontName = v; Refresh()
@@ -751,7 +785,7 @@ ns.options = {
                         ns.cfg.nameOutline = v; Refresh()
                     end,
                 },
-                fontSizeName = {
+                fontSize = {
                     type = "range",
                     name = "Размер",
                     order = 2,
@@ -834,8 +868,8 @@ ns.options = {
                     type = "select",
                     name = "Шрифт",
                     order = 1,
+                    values = function() return LibStub("LibSharedMedia-3.0"):HashTable("font") end,
                     dialogControl = "LSM30_Font",
-                    values = AceGUIWidgetLSMlists.font,
                     get = function() return ns.cfg.fontStatus end,
                     set = function(_, v)
                         ns.cfg.fontStatus = v; Refresh()
@@ -876,7 +910,6 @@ ns.options = {
                     set = function(_, v)
                         if ns.cfg.hpMode ~= v then
                             ns.cfg.hpMode = v;
-                            ns.needsReload = true;
                             if ns.SyncBlizzardSettings then ns.SyncBlizzardSettings() end
                             Refresh()
                         end
@@ -930,6 +963,17 @@ ns.options = {
 
 -- ИНИЦИАЛИЗАЦИЯ (Запускается AceAddon-ом)
 function msh:OnInitialize()
+    local fontName = "Montserrat-SemiBold"
+    local fontPath = "Interface\\AddOns\\mshFrame\\Media\\msh.ttf"
+    LSM:Register("font", fontName, fontPath)
+
+    -- 2. ПРИНУДИТЕЛЬНО ДОБАВЛЯЕМ В СПИСОК МЕНЮ (Ace3)
+    -- Это заставит выпадающее меню увидеть шрифт даже без релоада
+    if not AceGUIWidgetLSMlists.font[fontName] then
+        AceGUIWidgetLSMlists.font[fontName] = fontName
+    end
+
+
     -- Загружаем БД
     self.db = LibStub("AceDB-3.0"):New("mshFrameDB", ns.defaults, true)
     ns.cfg = self.db.profile

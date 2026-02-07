@@ -36,8 +36,18 @@ function msh:OnEnable()
     self:RegisterEvent("PLAYER_ENTERING_WORLD", function()
         if msh.SyncBlizzardSettings then msh.SyncBlizzardSettings() end
     end)
-end
 
--- Быстрая перезагрузка
-SLASH_RL1 = "/rl"
-SlashCmdList["RL"] = ReloadUI
+    self:RegisterEvent("RAID_TARGET_UPDATE", function()
+        for i = 1, 40 do
+            local raidFrame = _G["CompactRaidFrame" .. i]
+            if raidFrame and raidFrame.mshLayersCreated then
+                msh.UpdateUnitDisplay(raidFrame)
+            end
+
+            local partyFrame = _G["CompactPartyFrameMember" .. i]
+            if partyFrame and partyFrame.mshLayersCreated then
+                msh.UpdateUnitDisplay(partyFrame)
+            end
+        end
+    end)
+end
