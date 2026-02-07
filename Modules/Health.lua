@@ -2,6 +2,8 @@ local _, ns = ...
 local msh = ns
 local LSM = LibStub("LibSharedMedia-3.0")
 
+local isUpdating = false
+
 function msh.CreateHealthLayers(frame)
     if frame.mshHealthCreated then return end
 
@@ -15,19 +17,26 @@ function msh.CreateHealthLayers(frame)
 end
 
 function msh.UpdateHealthDisplay(frame)
+    if isUpdating or not frame or frame:IsForbidden() then return end
+
     local cfg = ns.cfg
     if not cfg or not frame.healthBar then return end
+
+    isUpdating = true
+
     msh.CreateHealthLayers(frame)
 
     -- 1. Текстура полоски
-    local texture = LSM:Fetch("statusbar", cfg.texture)
-    frame.healthBar:SetStatusBarTexture(texture)
+    local texturePath = LSM:Fetch("statusbar", cfg.texture)
+    if frame.healthBar:GetStatusBarTexture():GetTexture() ~= texturePath then
+        frame.healthBar:SetStatusBarTexture(texturePath)
+    end
 
     -- 2. Логика отображения ХП
     if cfg.hpMode == "NONE" then
-        frame.mshHP:Hide()
+        if frame.mshHP then frame.mshHP:Hide() end
     else
-        -- Вместо вычислений просто берем то, что Blizzard уже подготовила в своем скрытом statusText
+        -- Берем текст Blizzard
         local blizzText = frame.statusText and frame.statusText:GetText() or ""
         local font = LSM:Fetch("font", cfg.fontStatus)
 
@@ -38,4 +47,6 @@ function msh.UpdateHealthDisplay(frame)
         frame.mshHP:SetText(blizzText)
         frame.mshHP:Show()
     end
+
+    isUpdating = false -- Разблокируем для следующего обновления
 end
