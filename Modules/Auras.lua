@@ -25,7 +25,8 @@ function msh.UpdateAuras(frame)
             grow = cfg.auraGrow,
             space = cfg.auraSpacing,
             timer = cfg.showbuffTimer,
-            scale = cfg.buffTextScale
+            scale = cfg.buffTextScale,
+            showTooltip = cfg.showBuffsTooltip
         },
         {
             pool = frame.debuffFrames,
@@ -39,7 +40,8 @@ function msh.UpdateAuras(frame)
             grow = cfg.debuffGrow,
             space = cfg.debuffSpacing,
             timer = cfg.showDebuffTimer,
-            scale = cfg.debuffTextScale
+            scale = cfg.debuffTextScale,
+            showTooltip = cfg.showDebuffsTooltip
         },
         {
             pool = { frame.CenterDefensiveBuff or frame.centerStatusIcon },
@@ -53,7 +55,8 @@ function msh.UpdateAuras(frame)
             grow = "RIGHT",
             space = 0,
             timer = cfg.showBigSaveTimer,
-            scale = cfg.bigSaveTextScale
+            scale = cfg.bigSaveTextScale,
+            showBigSaveTooltip = cfg.showBigSaveTooltip
         },
         -- Диспел обычно либо включен (стандарт), либо нет
         { pool = frame.dispelDebuffFrames, enabled = cfg.showDispel, isCustom = true, size = cfg.dispelSize, point = cfg.dispelPoint, x = cfg.dispelX, y = cfg.dispelY, grow = "LEFT", space = 2, scale = 0.8 }
@@ -66,6 +69,7 @@ function msh.UpdateAuras(frame)
             for i = 1, #data.pool do
                 local icon = data.pool[i]
                 if icon then
+                    icon:EnableMouse(data.showTooltip or data.showBigSaveTooltip or false)
                     if not data.enabled then
                         if icon:IsShown() then icon:Hide() end
                     elseif icon:IsShown() then

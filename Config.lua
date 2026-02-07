@@ -33,6 +33,7 @@ local function AddAuraControls(args, path, key, label, customColor)
     local toggleKey = "show" .. key
     local blizzKey = "useBlizz" .. key
     local customKey = "showCustom" .. key
+    local tooltipKey = "show" .. key .. "Tooltip"
 
     args[toggleKey] = {
         type = "toggle",
@@ -68,6 +69,17 @@ local function AddAuraControls(args, path, key, label, customColor)
         set = function(_, v)
             path[customKey] = v; ns.needsReload = true; LibStub("AceConfigRegistry-3.0"):NotifyChange("mshFrame");
         end
+    }
+    args[tooltipKey] = {
+        type = "toggle",
+        name = "Подсказки (Tooltip)",
+        desc = "Показывать описание при наведении на иконку.",
+        order = 5, -- Поставь нужный порядок
+
+        get = function() return path[tooltipKey] end,
+        set = function(_, value)
+            path[tooltipKey] = value
+        end,
     }
 end
 
@@ -961,6 +973,8 @@ local defaultProfile = {
     showCustomDebuffs = true,
     useBlizzBigSave = false,
     showCustomBigSave = true,
+    showAuraTooltip = true,
+    showBigSaveTooltip = true
 }
 
 ns.defaults = {
@@ -968,6 +982,7 @@ ns.defaults = {
         global = {
             hpMode = "PERCENT", -- Глобальный CVar формат
             showOnlyDispellable = false,
+            raidClassColor = true,
         },
         party = defaultProfile,
         raid = defaultProfile,
@@ -1002,6 +1017,19 @@ ns.options = {
                         Refresh()
                     end,
                 },
+                raidClassColor = {
+                    name = "Цвета классов",
+                    desc = "Включает окрашивание фреймов в цвета классов (CVar)",
+                    type = "toggle",
+                    order = 3,
+                    get = function() return msh.db.profile.global.raidClassColor end,
+                    set = function(_, v)
+                        msh.db.profile.global.raidClassColor = v
+                        msh.SyncBlizzardSettings() -- Вызываем твою общую синхронизацию
+                        Refresh()                  -- Обновляем ГУИ
+                    end,
+                },
+
             }
         },
         partyTab = {
@@ -1108,6 +1136,7 @@ function msh.SyncBlizzardSettings()
         SetCVar("raidFramesHealthText", "none")
     end
 
+    SetCVar("raidFramesDisplayClassColor", db.raidClassColor and "1" or "0")
     SetCVar("raidFramesDisplayOnlyDispellableDebuffs", db.showOnlyDispellable and "1" or "0")
 
     if CompactUnitFrameProfiles_ApplyCurrentSettings then

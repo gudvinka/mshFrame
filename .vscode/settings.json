@@ -48,6 +48,7 @@
         "PanelTemplates_SelectTab",
         "PanelTemplates_DeselectTab",
         "CompactUnitFrame_UpdateStatusText",
-        "CompactUnitFrame_UpdateRoleIcon"
+        "CompactUnitFrame_UpdateRoleIcon",
+        "CompactUnitFrame_UpdateHealthColor"
     ]
 }
