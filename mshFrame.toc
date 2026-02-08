@@ -1,32 +1,28 @@
 ## Interface: 120000
 ## Title: mshFrame
-## Version: 0.5
+## Version: 0.6
 ## SavedVariables: mshFrameDB
 
-# 1. Фундамент
 Libs\LibSharedMedia-3.0\LibStub\LibStub.lua
 Libs\Ace3\CallbackHandler-1.0\CallbackHandler-1.0.xml
 
-# 2. AceAddon (ЭТОЙ СТРОКИ НЕ ХВАТАЛО)
 Libs\Ace3\AceAddon-3.0\AceAddon-3.0.xml
 Libs\Ace3\AceEvent-3.0\AceEvent-3.0.xml
 
-# 3. SharedMedia
+# SharedMedia
 Libs\LibSharedMedia-3.0\lib.xml
 
-# 4. Остальной Ace3
+# Ace3
 Libs\Ace3\AceDB-3.0\AceDB-3.0.xml
 Libs\Ace3\AceGUI-3.0\AceGUI-3.0.xml
 Libs\Ace3\AceConfig-3.0\AceConfig-3.0.xml
 Libs\Ace3\AceDBOptions-3.0\AceDBOptions-3.0.xml
 
-# 5. Виджеты
 Libs\Ace3\AceGUI-3.0-SharedMediaWidgets\widget.xml
 
 Libs\LibSerialize\LibSerialize.lua
 Libs\LibDeflate\LibDeflate.lua
 
-# Логика
 Config.lua
 Parser.lua
 Modules\Units.lua

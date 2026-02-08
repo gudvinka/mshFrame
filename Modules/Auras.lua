@@ -75,10 +75,10 @@ function msh.UpdateAuras(frame)
                     elseif icon:IsShown() then
                         visibleCount = visibleCount + 1
 
-                        -- РАЗМЕР (всегда)
+
                         icon:SetSize(data.size or 18, data.size or 18)
 
-                        -- ПОЗИЦИЯ (только если включен Кастом)
+
                         if data.isCustom then
                             icon:ClearAllPoints()
                             if visibleCount == 1 then

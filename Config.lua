@@ -12,7 +12,7 @@ local reloadWarning = {
     type = "description",
     name = "\n|cffff0000ВНИМАНИЕ:|r Требуется |cffffff00/reload|r для применения настроек.\n",
     fontSize = "medium",
-    order = 0, -- Всегда сверху
+    order = 0,
     hidden = function() return not ns.needsReload end,
 }
 
@@ -48,7 +48,7 @@ local function AddAuraControls(args, path, key, label, customColor)
         type = "toggle",
         order = 2,
         name = function()
-            local color = customColor or "|cff00ffff" -- Цвет по умолчанию (лазурный), если забыл передать
+            local color = customColor or "|cff00ffff"
             return (not path[toggleKey] or path[customKey]) and "Стандарт Blizzard" or "|cff00ff00Стандарт Blizzard|r"
         end,
         disabled = function() return not path[toggleKey] or path[customKey] end,
@@ -61,7 +61,7 @@ local function AddAuraControls(args, path, key, label, customColor)
         type = "toggle",
         order = 3,
         name = function()
-            local color = customColor or "|cff00ffff" -- Цвет по умолчанию (лазурный), если забыл передать
+            local color = customColor or "|cff00ffff"
             return (not path[toggleKey] or path[blizzKey]) and "Кастомные ауры" or color .. "Кастомные ауры|r"
         end,
         disabled = function() return not path[toggleKey] or path[blizzKey] end,
@@ -74,7 +74,7 @@ local function AddAuraControls(args, path, key, label, customColor)
         type = "toggle",
         name = "Подсказки (Tooltip)",
         desc = "Показывать описание при наведении на иконку.",
-        order = 5, -- Поставь нужный порядок
+        order = 5,
 
         get = function() return path[tooltipKey] end,
         set = function(_, value)
@@ -86,19 +86,22 @@ end
 local outlineModes = {
     ["NONE"] = "Нет", ["OUTLINE"] = "Тонкий", ["THICKOUTLINE"] = "Жирный", ["MONOCHROME"] = "Пиксельный",
 }
-
 -- Функция мгновенного обновления фреймов
 local function Refresh()
     for i = 1, 40 do
         local rf = _G["CompactRaidFrame" .. i]
-        if rf then msh.ApplyStyle(rf) end -- Вызываем всегда, ApplyStyle сам разберется
+        if rf then
+            msh.ApplyStyle(rf)
+        end -- Вызываем всегда, ApplyStyle сам разберется
 
         local pf = _G["CompactPartyFrameMember" .. i]
-        if pf then msh.ApplyStyle(pf) end
+        if pf then
+            msh.ApplyStyle(pf)
+        end
     end
 end
 
--- Функция-шаблон для генерации вложенных групп
+-- Функция для генерации вложенных групп
 local function GetUnitGroups(path)
     local buffsArgs = {
         warning = reloadWarning,
@@ -252,7 +255,7 @@ local function GetUnitGroups(path)
             get = function() return msh.db.profile.global.showOnlyDispellable end,
             set = function(_, v)
                 msh.db.profile.global.showOnlyDispellable = v
-                msh.SyncBlizzardSettings() -- Вызываем синхронизацию CVar
+                msh.SyncBlizzardSettings()
                 ns.needsReload = true
                 LibStub("AceConfigRegistry-3.0"):NotifyChange("mshFrame")
                 Refresh()
@@ -575,7 +578,7 @@ local function GetUnitGroups(path)
                         path.texture = v; Refresh()
                     end,
                 },
-                -- ДОБАВЛЯЕМ СЮДА:
+
                 showGroups = {
                     name = "Заголовки групп",
                     desc = "Показывать названия групп SetAlpha(0)",
@@ -584,8 +587,22 @@ local function GetUnitGroups(path)
                     get = function() return path.showGroups end,
                     set = function(_, v)
                         path.showGroups = v
-                        msh.SyncBlizzardSettings() -- Применяем настройку через систему Blizzard
+                        msh.SyncBlizzardSettings()
                         Refresh()
+                    end,
+                },
+                hoverAlpha = {
+                    name = "Яркость подсветки",
+                    desc = "Прозрачность блика при наведении мыши.",
+                    type = "range",
+                    order = 3,
+                    min = 0,
+                    max = 1,
+                    step = 0.05,
+                    isPercent = true,
+                    get = function() return path.hoverAlpha or 0.2 end,
+                    set = function(_, v)
+                        path.hoverAlpha = v
                     end,
                 },
             }
@@ -779,14 +796,7 @@ local function GetUnitGroups(path)
                 bigSave = { name = "Сейв", type = "group", order = 4, args = bigSaveArgs },
             }
         },
-        logo = {
-            type = "description",
-            name = " ",
-            image = [[Interface\AddOns\mshFrame\Media\logo]],
-            imageWidth = 150,
-            imageHeight = 150,
-            order = 0,
-        },
+
         raidMarks = {
             name = "Рейдовые метки",
             type = "group",
@@ -873,7 +883,7 @@ local function GetUnitGroups(path)
                     name = "Включить кастомные иконки ролей",
                     desc = "Отображает иконку танка, целителя или урона",
                     order = 1,
-                    disabled = function() return path.useBlizzRole end, -- Блокировка
+                    disabled = function() return path.useBlizzRole end,
                     get = function(_) return path.showRoleIcon end,
                     set = function(_, v)
                         path.showRoleIcon = v; Refresh()
@@ -886,7 +896,7 @@ local function GetUnitGroups(path)
                     min = 8,
                     max = 40,
                     step = 1,
-                    disabled = function() return path.useBlizzRole end, -- Блокировка
+                    disabled = function() return path.useBlizzRole end,
                     get = function() return path.roleIconSize end,
                     set = function(_, v)
                         path.roleIconSize = v; Refresh()
@@ -897,7 +907,7 @@ local function GetUnitGroups(path)
                     name = "Якорь",
                     order = 3,
                     values = anchorPoints,
-                    disabled = function() return path.useBlizzRole end, -- Блокировка
+                    disabled = function() return path.useBlizzRole end,
                     get = function() return path.roleIconPoint end,
                     set = function(_, v)
                         path.roleIconPoint = v; Refresh()
@@ -910,7 +920,7 @@ local function GetUnitGroups(path)
                     min = -50,
                     max = 50,
                     step = 1,
-                    disabled = function() return path.useBlizzRole end, -- Блокировка
+                    disabled = function() return path.useBlizzRole end,
                     get = function() return path.roleIconX end,
                     set = function(_, v)
                         path.roleIconX = v; Refresh()
@@ -923,7 +933,7 @@ local function GetUnitGroups(path)
                     min = -50,
                     max = 50,
                     step = 1,
-                    disabled = function() return path.useBlizzRole end, -- Блокировка
+                    disabled = function() return path.useBlizzRole end,
                     get = function() return path.roleIconY end,
                     set = function(_, v)
                         path.roleIconY = v; Refresh()
@@ -990,12 +1000,13 @@ local defaultProfile = {
     showBigSaveTooltip = true,
 
     showGroups = true,
+    hoverAlpha = 0.2,
 }
 
 ns.defaults = {
     profile = {
         global = {
-            hpMode = "PERCENT", -- Глобальный CVar формат
+            hpMode = "PERCENT",
             showOnlyDispellable = false,
             raidClassColor = true,
         },
@@ -1040,9 +1051,17 @@ ns.options = {
                     get = function() return msh.db.profile.global.raidClassColor end,
                     set = function(_, v)
                         msh.db.profile.global.raidClassColor = v
-                        msh.SyncBlizzardSettings() -- Вызываем твою общую синхронизацию
-                        Refresh()                  -- Обновляем ГУИ
+                        msh.SyncBlizzardSettings()
+                        Refresh()
                     end,
+                },
+                logo = {
+                    type = "description",
+                    name = "ВОТ И ДУМАЙТЕ",
+                    image = [[Interface\AddOns\mshFrame\Media\smaev]],
+                    imageWidth = 150,
+                    imageHeight = 150,
+                    order = 0,
                 },
 
             }
@@ -1051,14 +1070,14 @@ ns.options = {
             name = "|cff00ff00Группа (Party)|r",
             type = "group",
             order = 2,
-            childGroups = "tree", -- ВОТ ЗДЕСЬ ОНО ДОЛЖНО БЫТЬ
+            childGroups = "tree",
             args = {}
         },
         raidTab = {
             name = "|cff00ffffРейд (Raid)|r",
             type = "group",
             order = 3,
-            childGroups = "tree", -- И ЗДЕСЬ
+            childGroups = "tree",
             args = {}
         },
     }
@@ -1074,10 +1093,10 @@ function msh:OnInitialize()
     -- Загружаем БД
     self.db = LibStub("AceDB-3.0"):New("mshFrameDB", ns.defaults, true)
 
-    -- 3. Добавляем стандартную вкладку профилей AceDB в наше дерево настроек
+
     ns.options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
     ns.options.args.profiles.name = "Профили"
-    ns.options.args.profiles.order = 100 -- Всегда в конце списка
+    ns.options.args.profiles.order = 100
     ns.options.args.profiles.args.exportHeader = {
         type = "header",
         name = "Экспорт профиля",
@@ -1095,7 +1114,7 @@ function msh:OnInitialize()
         order = 111,
         width = "full",
         get = function() return msh:GetExportString() end,
-        set = function() end, -- поле только для чтения
+        set = function() end,
     }
 
     ns.options.args.profiles.args.importBox = {
@@ -1108,20 +1127,20 @@ function msh:OnInitialize()
         confirm = true,
         confirmText = "Вы уверены, что хотите перезаписать текущий профиль этими настройками?",
     }
-    -- 4. Наполняем вкладки Группа/Рейд данными (через RefreshMenu)
+
     self:RefreshMenu()
 
-    -- 5. Подписываемся на события смены профиля
-    -- Это заставит аддон перерисовать фреймы и меню при переключении
+    -- Подписываемся на события смены профиля
+
     self.db.RegisterCallback(msh, "OnProfileChanged", "RefreshConfig")
     self.db.RegisterCallback(msh, "OnProfileCopied", "RefreshConfig")
     self.db.RegisterCallback(msh, "OnProfileReset", "RefreshConfig")
 
-    -- 6. Регистрация в AceConfig
+
     AceConfig:RegisterOptionsTable("mshFrame", ns.options)
     self.optionsFrame = AceConfigDialog:AddToBlizOptions("mshFrame", "mshFrame")
 
-    -- 7. Слэш-команда
+    -- Слэш-команда
     SLASH_MSH1 = "/msh"
     SlashCmdList["MSH"] = function()
         AceConfigDialog:SetDefaultSize("mshFrame", 1000, 600)
@@ -1133,7 +1152,7 @@ function msh:RefreshMenu()
     ns.options.args.partyTab.args = GetUnitGroups(self.db.profile.party)
     ns.options.args.raidTab.args = GetUnitGroups(self.db.profile.raid)
 
-    -- Принудительно обновляем открытое окно настроек
+
     LibStub("AceConfigRegistry-3.0"):NotifyChange("mshFrame")
 end
 
@@ -1164,7 +1183,7 @@ function msh.SyncBlizzardSettings()
         CompactRaidFrameManager.displayFrame:SetAlpha(alpha)
     end
 
-    -- Применяем всё это хозяйство
+
     if CompactPartyFrameTitle then
         CompactPartyFrameTitle:SetAlpha(alpha)
     end
@@ -1179,10 +1198,9 @@ function msh.SyncBlizzardSettings()
 end
 
 function msh:RefreshConfig()
-    -- Сначала обновляем меню
     self:RefreshMenu()
 
-    -- Затем обновляем каждый фрейм на экране
+
     for i = 1, 40 do
         local rf = _G["CompactRaidFrame" .. i]
         if rf and rf.mshLayersCreated then msh.ApplyStyle(rf) end
@@ -1191,27 +1209,27 @@ function msh:RefreshConfig()
         if pf and pf.mshLayersCreated then msh.ApplyStyle(pf) end
     end
 
-    -- Синхронизируем системные настройки Blizzard (Health Text и т.д.)
+
     if msh.SyncBlizzardSettings then msh.SyncBlizzardSettings() end
 
     print("|cff00ff00mshFrame:|r Профиль успешно применен.")
 end
 
 function msh:GetExportString()
-    local profileData = self.db:GetCurrentProfile()     -- берем имя текущего профиля
-    local settings = self.db.profile                    -- берем сами данные
+    local profileData = self.db:GetCurrentProfile()
+    local settings = self.db.profile
 
-    local serialized = LibS:Serialize(settings)         -- упаковываем таблицу
-    local compressed = LibD:CompressDeflate(serialized) -- сжимаем
-    local encoded = LibD:EncodeForPrint(compressed)     -- переводим в текст
+    local serialized = LibS:Serialize(settings)
+    local compressed = LibD:CompressDeflate(serialized)
+    local encoded = LibD:EncodeForPrint(compressed)
 
-    return "MSH:" .. encoded                            -- добавляем префикс, чтобы аддон узнал свою строку
+    return "MSH:" .. encoded
 end
 
 function msh:ImportProfileFromString(str)
     if not str or str == "" then return end
 
-    -- Убираем префикс
+
     local data = str:match("MSH:(.+)")
     if not data then
         print("Ошибка: Неверный формат строки!"); return
@@ -1222,7 +1240,6 @@ function msh:ImportProfileFromString(str)
     local success, settings = LibS:Deserialize(decompressed)
 
     if success then
-        -- Записываем данные в текущий профиль
         for k, v in pairs(settings) do
             self.db.profile[k] = v
         end

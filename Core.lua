@@ -1,8 +1,8 @@
 local addonName, ns = ...
 
--- Инициализируем аддон через AceAddon, чтобы OnInitialize в Config.lua сработал
+
 local msh = LibStub("AceAddon-3.0"):NewAddon(ns, addonName, "AceEvent-3.0")
--- Теперь ns и msh — это один и тот же объект аддона
+
 
 function msh.ApplyStyle(frame)
     if not frame or frame:IsForbidden() then return end
@@ -19,14 +19,14 @@ function msh.ApplyStyle(frame)
     end
 
     -- 3. ДИНАМИЧЕСКОЕ ПЕРЕКЛЮЧЕНИЕ КОНФИГА
-    -- Мы записываем ссылку в ns.cfg, чтобы Parser, Health и Units видели нужные данные
+
     if isRaid then
         ns.cfg = msh.db.profile.raid
     elseif isParty then
         ns.cfg = msh.db.profile.party
     end
 
-    -- Вызов функций из модулей
+
     if msh.CreateUnitLayers then msh.CreateUnitLayers(frame) end
     if msh.UpdateUnitDisplay then msh.UpdateUnitDisplay(frame) end
     if msh.UpdateHealthDisplay then msh.UpdateHealthDisplay(frame) end

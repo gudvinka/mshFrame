@@ -7,14 +7,12 @@ function msh.GetShortName(unit)
 
     local name = GetUnitName(unit, false) or ""
 
-    -- .match(name, "([^%-]+)") or name
-
     if UnitIsPlayer(unit) then
         name = Ambiguate(name, "none")
     end
 
     local cfg = ns.cfg
-    if not cfg then return name end -- Если конфиг еще не прогружен, возвращаем полное имя
+    if not cfg then return name end
 
     -- Обрезка
     if cfg.shortenNames then

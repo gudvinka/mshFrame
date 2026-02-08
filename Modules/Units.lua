@@ -46,7 +46,7 @@ function msh.UpdateUnitDisplay(frame)
     if frame.name then frame.name:SetAlpha(0) end
 
 
-    -- 4. РОЛЬ
+    -- РОЛЬ
     local role = UnitGroupRolesAssigned(unit)
 
     if cfg.useBlizzRole then
@@ -79,12 +79,11 @@ function msh.UpdateUnitDisplay(frame)
                 frame.mshRole:Show()
             end
         else
-            -- Если галочка "Показать нашу" снята
             if frame.mshRole then frame.mshRole:Hide() end
         end
     end
 
-    -- 5. РЕЙДОВЫЕ МЕТКИ (Проверь, чтобы этот код шел СРАЗУ ПОСЛЕ блока ролей)
+    -- РЕЙДОВЫЕ МЕТКИ
     local index = GetRaidTargetIndex(unit)
     if index then
         frame.mshRaidIcon:SetTexture([[Interface\TargetingFrame\UI-RaidTargetingIcons]])

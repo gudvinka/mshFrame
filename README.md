@@ -40,28 +40,43 @@ The addon provides minimal yet powerful customization of Blizzard's internal CVa
 
 ### Commands
 * `/msh` — Open the settings GUI.
-* `/rl` — Quickly reload the UI (recommended after changing some system-level CVar settings).
 
-
+### Added/fixed
+- [x] Modular Architecture
+- [x] Secret Value Fix
+- [x] Combat Lockdown / Live Update
+- [x] caching names
+- [x] Профили (AceDB)
+- [x] Разделение Рейд/Пати
+- [x] Mouseover Highlight
+- [x] Скрытие заголовков групп
+- [x] Убрать тултипы аур
 
 ### TODO
-- [ ] Modular Architecture
-- [ ] Secret Value Fix
-- [ ] Combat Lockdown / Live Update
-- [ ] Debuff Highlight (Диспел)
-- [ ] Кэширование имен
-- [ ] Test Mode (Тестовый режим)
-- [ ] Role Sorting (Танк-Хил-ДД)
-- [ ] Лимит дебаффов (Max 3-5)
-- [ ] Профили (AceDB)
-- [ ] Frame Spacing (Отступы)
-- [ ] Формат ХП (К/М)
+- [ ] Test Mode
+- [ ] Debuff Highlight
+- [ ] Лимит дебаффов (Max 3-5)?
+- [ ] Frame Spacing?
 - [ ] Absorb & Shield Manager
-- [ ] Разделение Рейд/Пати
-- [ ] Mouseover Highlight
+- [ ] Color option for heal absorbs и щитки
 - [ ] Стили диспела (Пунктир)
 - [ ] Прозрачность иконок
-- [ ] Скрытие заголовков групп
 - [ ] Leader/Assist Icons
-- [ ] Скрытие себя (Display Self)
-- [ ] Убрать тултипы аур
+- [ ] поддержка ру и англ языка
+- [ ] заполнение полосок hp слева на права, сверху вниз
+- [ ] кастомные красивые иконки для роли
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
