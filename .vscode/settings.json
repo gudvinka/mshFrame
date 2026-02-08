@@ -49,6 +49,9 @@
         "PanelTemplates_DeselectTab",
         "CompactUnitFrame_UpdateStatusText",
         "CompactUnitFrame_UpdateRoleIcon",
-        "CompactUnitFrame_UpdateHealthColor"
+        "CompactUnitFrame_UpdateHealthColor",
+        "CompactRaidFrameManager_SetSetting",
+        "CompactRaidFrameManager",
+        "CompactPartyFrameTitle"
     ]
 }

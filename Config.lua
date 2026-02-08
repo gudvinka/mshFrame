@@ -574,7 +574,20 @@ local function GetUnitGroups(path)
                     set = function(_, v)
                         path.texture = v; Refresh()
                     end,
-                }
+                },
+                -- ДОБАВЛЯЕМ СЮДА:
+                showGroups = {
+                    name = "Заголовки групп",
+                    desc = "Показывать названия групп SetAlpha(0)",
+                    type = "toggle",
+                    order = 2,
+                    get = function() return path.showGroups end,
+                    set = function(_, v)
+                        path.showGroups = v
+                        msh.SyncBlizzardSettings() -- Применяем настройку через систему Blizzard
+                        Refresh()
+                    end,
+                },
             }
         },
         names = {
@@ -974,7 +987,9 @@ local defaultProfile = {
     useBlizzBigSave = false,
     showCustomBigSave = true,
     showAuraTooltip = true,
-    showBigSaveTooltip = true
+    showBigSaveTooltip = true,
+
+    showGroups = true,
 }
 
 ns.defaults = {
@@ -1124,20 +1139,39 @@ end
 
 -- СИНХРОНИЗАЦИЯ С CVARS (Системные настройки)
 function msh.SyncBlizzardSettings()
-    local db = msh.db and msh.db.profile.global
-    if not db then return end
-    local mode = db.hpMode
-    -- Управление системным текстом ХП Blizzard
-    if mode == "VALUE" then
+    local profile = msh.db and msh.db.profile
+    if not profile then return end
+
+    local global = profile.global
+    local isRaid = IsInRaid()
+    local groupCfg = isRaid and profile.raid or profile.party
+
+    if global.hpMode == "VALUE" then
         SetCVar("raidFramesHealthText", "health")
-    elseif mode == "PERCENT" then
+    elseif global.hpMode == "PERCENT" then
         SetCVar("raidFramesHealthText", "perc")
     else
         SetCVar("raidFramesHealthText", "none")
     end
 
-    SetCVar("raidFramesDisplayClassColor", db.raidClassColor and "1" or "0")
-    SetCVar("raidFramesDisplayOnlyDispellableDebuffs", db.showOnlyDispellable and "1" or "0")
+    SetCVar("raidFramesDisplayClassColor", global.raidClassColor and "1" or "0")
+    SetCVar("raidFramesDisplayOnlyDispellableDebuffs", global.showOnlyDispellable and "1" or "0")
+
+    local show = groupCfg and groupCfg.showGroups
+    local alpha = show and 1 or 0
+
+    if CompactRaidFrameManager and CompactRaidFrameManager.displayFrame then
+        CompactRaidFrameManager.displayFrame:SetAlpha(alpha)
+    end
+
+    -- Применяем всё это хозяйство
+    if CompactPartyFrameTitle then
+        CompactPartyFrameTitle:SetAlpha(alpha)
+    end
+
+    if CompactRaidFrameManager_SetSetting then
+        CompactRaidFrameManager_SetSetting("displayGroups", show)
+    end
 
     if CompactUnitFrameProfiles_ApplyCurrentSettings then
         CompactUnitFrameProfiles_ApplyCurrentSettings()
