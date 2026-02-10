@@ -17,19 +17,22 @@ end
 function msh.UpdateUnitDisplay(frame)
     if not frame or frame:IsForbidden() then return end
 
+    local unit = frame.displayedUnit or frame.unit
+    if not unit or not UnitExists(unit) then return end
+
     local cfg = ns.cfg
     if not cfg then return end
 
-    local unit = frame.displayedUnit or frame.unit
-    if not unit or not cfg or not frame.mshName then return end
-
     -- Имя
     local currentRawName = GetUnitName(unit, false)
-    if not currentRawName then
-        frame.mshName:SetText("")
+    local unitGUID = UnitGUID(unit)
+
+    -- ФИКС ДЛЯ МК
+    if not currentRawName or not unitGUID or type(currentRawName) == "userdata" or type(unitGUID) == "userdata" then
         return
     end
-    local unitGUID = UnitGUID(unit) or "no-guid"
+
+    -- Теперь склейка cacheKey безопасна
     local cacheKey = currentRawName .. unitGUID .. (cfg.nameLength or "10") .. tostring(cfg.shortenNames)
 
     if frame.mshCachedKey ~= cacheKey then
@@ -37,7 +40,6 @@ function msh.UpdateUnitDisplay(frame)
         frame.mshName:SetText(name)
         frame.mshCachedKey = cacheKey
     end
-
     frame.mshName:ClearAllPoints()
     frame.mshName:SetPoint(cfg.namePoint or "CENTER", frame, cfg.nameX or 0, cfg.nameY or 0)
 
@@ -76,6 +78,7 @@ function msh.UpdateUnitDisplay(frame)
             frame.roleIcon:SetAlpha(0)
         end
 
+        -- ОБНОВЛЕНИЕ ИКОНКИ РОЛИ
         if cfg.showRoleIcon and role and role ~= "NONE" then
             if frame.mshRole then
                 frame.mshRole:SetTexture([[Interface\LFGFrame\UI-LFG-ICON-PORTRAITROLES]])
