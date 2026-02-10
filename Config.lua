@@ -1115,8 +1115,8 @@ ns.options = {
                 },
                 logo = {
                     type = "description",
-                    name = "ВОТ И ДУМАЙТЕ",
-                    image = [[Interface\AddOns\mshFrame\Media\smaev]],
+                    name = "",
+                    image = [[Interface\AddOns\mshFrame\Media\onyaka]],
                     imageWidth = 150,
                     imageHeight = 150,
                     order = 0,
