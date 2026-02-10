@@ -897,6 +897,39 @@ local function GetUnitGroups(path)
                         path.showRoleIcon = v; Refresh()
                     end,
                 },
+                showRoleTank = {
+                    type = "toggle",
+                    name = "Танк",
+                    order = 1.1,
+                    width = "half",
+                    disabled = function() return path.useBlizzRole or not path.showRoleIcon end,
+                    get = function() return path.showRoleTank end,
+                    set = function(_, v)
+                        path.showRoleTank = v; Refresh()
+                    end,
+                },
+                showRoleHeal = {
+                    type = "toggle",
+                    name = "Хил",
+                    order = 1.2,
+                    width = "half",
+                    disabled = function() return path.useBlizzRole or not path.showRoleIcon end,
+                    get = function() return path.showRoleHeal end,
+                    set = function(_, v)
+                        path.showRoleHeal = v; Refresh()
+                    end,
+                },
+                showRoleDamager = {
+                    type = "toggle",
+                    name = "ДД",
+                    order = 1.3,
+                    width = "half",
+                    disabled = function() return path.useBlizzRole or not path.showRoleIcon end,
+                    get = function() return path.showRoleDamager end,
+                    set = function(_, v)
+                        path.showRoleDamager = v; Refresh()
+                    end,
+                },
                 roleIconSize = {
                     type = "range",
                     name = "Размер",
@@ -1009,6 +1042,9 @@ local defaultProfile = {
 
     showGroups = true,
     hoverAlpha = 0.2,
+    showRoleTank = true,
+    showRoleHeal = true,
+    showRoleDamager = true,
 }
 
 ns.defaults = {

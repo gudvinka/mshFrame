@@ -71,8 +71,11 @@ function msh.UpdateUnitDisplay(frame)
 
     if cfg.useBlizzRole then
         if frame.mshRole then frame.mshRole:Hide() end
+
         if frame.roleIcon then
             frame.roleIcon:SetAlpha(1)
+            frame.roleIcon:Show()
+            CompactUnitFrame_UpdateRoleIcon(frame)
         end
     else
         if frame.roleIcon then
@@ -80,16 +83,27 @@ function msh.UpdateUnitDisplay(frame)
             frame.roleIcon:SetAlpha(0)
         end
 
-        -- ОБНОВЛЕНИЕ ИКОНКИ РОЛИ
-        if cfg.showRoleIcon and role and role ~= "NONE" then
+        local shouldShowCustom = false
+        if cfg.showRoleIcon then
+            if role == "TANK" and cfg.showRoleTank then
+                shouldShowCustom = true
+            elseif role == "HEALER" and cfg.showRoleHeal then
+                shouldShowCustom = true
+            elseif role == "DAMAGER" and cfg.showRoleDamager then
+                shouldShowCustom = true
+            end
+        end
+
+        -- Отрисовка нашей иконки
+        if shouldShowCustom and role and role ~= "NONE" then
             if frame.mshRole then
                 frame.mshRole:SetTexture([[Interface\LFGFrame\UI-LFG-ICON-PORTRAITROLES]])
-
                 local size = cfg.roleIconSize or 12
                 frame.mshRole:SetSize(size, size)
                 frame.mshRole:ClearAllPoints()
                 frame.mshRole:SetPoint(cfg.roleIconPoint or "TOPLEFT", frame, cfg.roleIconX or 2, cfg.roleIconY or -2)
 
+                -- Установка координат текстуры (Танк, Хил, ДД)
                 if role == "TANK" then
                     frame.mshRole:SetTexCoord(0, 19 / 64, 22 / 64, 41 / 64)
                 elseif role == "HEALER" then
@@ -100,6 +114,7 @@ function msh.UpdateUnitDisplay(frame)
                 frame.mshRole:Show()
             end
         else
+            -- Если и кастом выключен (или не прошел фильтр), скрываем всё
             if frame.mshRole then frame.mshRole:Hide() end
         end
     end
