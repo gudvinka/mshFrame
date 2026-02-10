@@ -42,12 +42,27 @@ end
 function msh.UpdateHealthDisplay(frame)
     if isUpdating or not frame or frame:IsForbidden() then return end
 
-    local cfg = ns.cfg
+    local cfg = ns.cfg -- Сначала берем конфиг!
     if not cfg or not frame.healthBar then return end
 
-    isUpdating = true
+    if not frame.mshHealthCreated then
+        msh.CreateHealthLayers(frame)
+    end
 
-    msh.CreateHealthLayers(frame)
+    -- Умный выбор шрифта (как в юнитах)
+    local globalFont = msh.db.profile.global.globalFontName
+    local localFont = cfg.fontStatus
+
+    local activeFont
+    if localFont and localFont ~= "Default" and localFont ~= "" then
+        activeFont = localFont
+    else
+        activeFont = (globalFont and globalFont ~= "") and globalFont or "Montserrat-SemiBold"
+    end
+
+    local fontPath = LSM:Fetch("font", activeFont)
+
+    isUpdating = true
 
     -- 1. Текстура полоски
     local texturePath = LSM:Fetch("statusbar", cfg.texture)
@@ -63,7 +78,7 @@ function msh.UpdateHealthDisplay(frame)
         local blizzText = frame.statusText and frame.statusText:GetText() or ""
         local font = LSM:Fetch("font", cfg.fontStatus)
 
-        frame.mshHP:SetFont(font, cfg.fontSizeStatus, cfg.statusOutline)
+        frame.mshHP:SetFont(fontPath, cfg.fontSizeStatus, cfg.statusOutline)
         frame.mshHP:ClearAllPoints()
         frame.mshHP:SetPoint(cfg.statusPoint or "TOP", frame, cfg.statusX or 0, cfg.statusY or 0)
 

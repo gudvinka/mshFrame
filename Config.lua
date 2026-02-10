@@ -616,7 +616,11 @@ local function GetUnitGroups(path)
                     type = "select",
                     name = "Шрифт имени",
                     order = 1,
-                    values = function() return LibStub("LibSharedMedia-3.0"):HashTable("font") end,
+                    values = function()
+                        local list = LibStub("LibSharedMedia-3.0"):HashTable("font")
+                        list["Default"] = "|cff00ff00По умолчанию (Глобальный)|r" -- Добавляем наш пункт
+                        return list
+                    end,
                     dialogControl = "LSM30_Font",
                     get = function() return path.fontName end,
                     set = function(_, v)
@@ -714,7 +718,11 @@ local function GetUnitGroups(path)
                     type = "select",
                     name = "Шрифт",
                     order = 1,
-                    values = function() return LibStub("LibSharedMedia-3.0"):HashTable("font") end,
+                    values = function()
+                        local list = LibStub("LibSharedMedia-3.0"):HashTable("font")
+                        list["Default"] = "|cff00ff00По умолчанию (Глобальный)|r" -- Добавляем наш пункт
+                        return list
+                    end,
                     dialogControl = "LSM30_Font",
                     get = function() return path.fontStatus end,
                     set = function(_, v)
@@ -948,8 +956,8 @@ end
 local defaultProfile = {
     -- Имя
     texture = "Flat",
-    fontName = "Montserrat-SemiBold",
-    fontStatus = "Montserrat-SemiBold",
+    fontName = "Default",
+    fontStatus = "Default",
     fontSizeName = 13,
     nameOutline = "OUTLINE",
     shortenNames = true,
@@ -1009,6 +1017,7 @@ ns.defaults = {
             hpMode = "PERCENT",
             showOnlyDispellable = false,
             raidClassColor = true,
+            globalFontName = "Friz Quadrata TT",
         },
         party = defaultProfile,
         raid = defaultProfile,
@@ -1026,11 +1035,24 @@ ns.options = {
             order = 1,
             args = {
                 header = { name = "Системные настройки Blizzard", type = "header", order = 1 },
+                globalFont = {
+                    name = "Глобальный шрифт",
+                    desc = "Устанавливает этот шрифт для всех текстов в аддоне.",
+                    type = "select",
+                    order = 2,
+                    values = function() return LibStub("LibSharedMedia-3.0"):HashTable("font") end,
+                    dialogControl = "LSM30_Font",
+                    get = function() return msh.db.profile.global.globalFontName end,
+                    set = function(_, v)
+                        msh.db.profile.global.globalFontName = v
+                        Refresh() -- Перерисовываем фреймы сразу
+                    end,
+                },
                 hpMode = {
                     name = "Формат данных ХП",
                     desc = "Влияет на то, какие данные Blizzard готовит для отображения (CVar)",
                     type = "select",
-                    order = 2,
+                    order = 3,
                     values = {
                         ["VALUE"] = "Цифры",
                         ["PERCENT"] = "Проценты",
@@ -1047,7 +1069,7 @@ ns.options = {
                     name = "Цвета классов",
                     desc = "Включает окрашивание фреймов в цвета классов (CVar)",
                     type = "toggle",
-                    order = 3,
+                    order = 4,
                     get = function() return msh.db.profile.global.raidClassColor end,
                     set = function(_, v)
                         msh.db.profile.global.raidClassColor = v

@@ -52,6 +52,7 @@
         "CompactUnitFrame_UpdateHealthColor",
         "CompactRaidFrameManager_SetSetting",
         "CompactRaidFrameManager",
-        "CompactPartyFrameTitle"
+        "CompactPartyFrameTitle",
+        "EditModeManagerFrame"
     ]
 }

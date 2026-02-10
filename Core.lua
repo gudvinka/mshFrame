@@ -51,15 +51,24 @@ function msh:OnEnable()
         if msh.SyncBlizzardSettings then msh.SyncBlizzardSettings() end
     end)
 
-    self:RegisterEvent("RAID_TARGET_UPDATE", function()
-        for i = 1, 40 do
-            local raidFrame = _G["CompactRaidFrame" .. i]
-            if raidFrame and raidFrame.mshLayersCreated then msh.UpdateUnitDisplay(raidFrame) end
+    local function ForceRefresh()
+        -- 0.1 сек достаточно, чтобы Blizzard закончил применять свой Layout
+        C_Timer.After(0.1, function()
+            if msh.RefreshConfig then
+                msh:RefreshConfig()
+            end
+        end)
+    end
 
-            local partyFrame = _G["CompactPartyFrameMember" .. i]
-            if partyFrame and partyFrame.mshLayersCreated then msh.UpdateUnitDisplay(partyFrame) end
-        end
-    end)
+    -- Хукаем выход из EditMode (через глобальный API)
+    if _G.EditMode and _G.EditMode.Exit then
+        hooksecurefunc(_G.EditMode, "Exit", ForceRefresh)
+    end
+
+    -- Хукаем финальное обновление макета (самый надежный способ в 11.0)
+    if _G.EditModeManagerFrame and _G.EditModeManagerFrame.UpdateLayoutInfo then
+        hooksecurefunc(_G.EditModeManagerFrame, "UpdateLayoutInfo", ForceRefresh)
+    end
 
     self:RegisterEvent("GROUP_ROSTER_UPDATE", function()
         C_Timer.After(0.1, function()

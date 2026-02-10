@@ -1,5 +1,6 @@
 local _, ns = ...
 local msh = ns
+local LSM = LibStub("LibSharedMedia-3.0")
 
 function msh.CreateUnitLayers(frame)
     if frame.mshLayersCreated then return end
@@ -14,7 +15,11 @@ function msh.CreateUnitLayers(frame)
 end
 
 function msh.UpdateUnitDisplay(frame)
+    if not frame or frame:IsForbidden() then return end
+
     local cfg = ns.cfg
+    if not cfg then return end
+
     local unit = frame.displayedUnit or frame.unit
     if not unit or not cfg or not frame.mshName then return end
 
@@ -37,11 +42,22 @@ function msh.UpdateUnitDisplay(frame)
     frame.mshName:SetPoint(cfg.namePoint or "CENTER", frame, cfg.nameX or 0, cfg.nameY or 0)
 
     -- УСТАНОВКА ШРИФТА
-    local fontPath = LibStub("LibSharedMedia-3.0"):Fetch("font", cfg.fontName)
-    local fontSize = cfg.fontSizeName or 12
+    local globalFont = msh.db.profile.global.globalFontName
+    local localFont  = cfg.fontName
+    local activeFont
+
+    if localFont and localFont ~= "Default" and localFont ~= "" then
+        activeFont = localFont
+    else
+        -- Иначе берем глобальный шрифт
+        activeFont = (globalFont and globalFont ~= "") and globalFont or "Montserrat-SemiBold"
+    end
+
+    local fontPath    = LSM:Fetch("font", activeFont)
+    local fontSize    = cfg.fontSizeName or 12
     local fontOutline = cfg.nameOutline or "OUTLINE"
 
-    local ok = frame.mshName:SetFont(fontPath, fontSize, fontOutline)
+    frame.mshName:SetFont(fontPath, fontSize, fontOutline)
 
     if frame.name then frame.name:SetAlpha(0) end
 

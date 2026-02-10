@@ -5,11 +5,32 @@ local LSM = LibStub("LibSharedMedia-3.0")
 -- Блокировщик для предотвращения рекурсии
 local isSetting = false
 
+local function UpdateCooldownFont(button, fontPath, size)
+    if button and button.cooldown then
+        -- Находим текст таймера внутри кулдауна
+        local cdText = button.cooldown:GetRegions()
+        if cdText and cdText.SetFont then
+            cdText:SetFont(fontPath, size, "OUTLINE")
+        end
+    end
+end
+
 function msh.UpdateAuras(frame)
     if not frame or frame:IsForbidden() or isSetting then return end
+
     local cfg = ns.cfg
     isSetting = true
 
+    local globalFont = msh.db.profile.global.globalFontName
+    local localFont = cfg.fontName -- Используем шрифт имен как локальный ориентир
+
+    local activeFont
+    if localFont and localFont ~= "Default" and localFont ~= "" then
+        activeFont = localFont
+    else
+        activeFont = (globalFont and globalFont ~= "") and globalFont or "Friz Quadrata TT"
+    end
+    local fontPath = LSM:Fetch("font", activeFont)
 
     -- Настройки для разных групп аур
     local auraSettings = {
@@ -105,6 +126,10 @@ function msh.UpdateAuras(frame)
                         -- ТАЙМЕРЫ (всегда)
                         if icon.cooldown then
                             icon.cooldown:SetHideCountdownNumbers(not data.timer)
+                            -- Вызываем функцию обновления шрифта с учетом масштаба
+                            local fontSize = (data.size or 18) * (data.scale or 0.8)
+                            UpdateCooldownFont(icon, fontPath, fontSize)
+
                             if data.scale then icon.cooldown:SetScale(data.scale) end
                         end
                     end

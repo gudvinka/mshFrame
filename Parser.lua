@@ -9,6 +9,8 @@ function msh.GetShortName(unit)
 
     if UnitIsPlayer(unit) then
         name = Ambiguate(name, "none")
+        name = name:gsub("%s*%(%*%)%s*", "")
+        name = name:trim()
     end
 
     local cfg = ns.cfg
