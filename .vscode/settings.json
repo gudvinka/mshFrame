@@ -53,6 +53,7 @@
         "CompactRaidFrameManager_SetSetting",
         "CompactRaidFrameManager",
         "CompactPartyFrameTitle",
-        "EditModeManagerFrame"
+        "EditModeManagerFrame",
+        "LE_PARTY_CATEGORY_HOME"
     ]
 }

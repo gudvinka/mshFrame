@@ -10,6 +10,8 @@ function msh.CreateUnitLayers(frame)
 
     frame.mshRole = frame:CreateTexture(nil, "OVERLAY", nil, 7)
     frame.mshRaidIcon = frame:CreateTexture(nil, "OVERLAY", nil, 7)
+    frame.mshLeader = frame:CreateTexture(nil, "OVERLAY", nil, 7)
+    if frame.leaderIcon then frame.leaderIcon:SetAlpha(0) end
 
     frame.mshLayersCreated = true
 end
@@ -126,5 +128,30 @@ function msh.UpdateUnitDisplay(frame)
         frame.mshRaidIcon:Show()
     else
         frame.mshRaidIcon:Hide()
+    end
+
+    -- ОБНОВЛЕНИЕ ИКОНКИ ЛИДЕРА
+    if frame.mshLeader then
+        local isLeader = UnitIsGroupLeader(unit)
+        local isAssistant = UnitIsGroupAssistant(unit) and not IsInRaid(LE_PARTY_CATEGORY_HOME)
+
+        -- Если у тебя в конфиге будет параметр showLeaderIcon (добавим его позже)
+        if (isLeader or isAssistant) then
+            if isLeader then
+                frame.mshLeader:SetTexture("Interface\\GroupFrame\\UI-Group-LeaderIcon")
+            else
+                frame.mshLeader:SetTexture("Interface\\GroupFrame\\UI-Group-AssistantIcon")
+            end
+
+            -- Настраиваем размер и позицию (пока жестко, потом вынесем в cfg)
+            local size = 12
+            frame.mshLeader:SetSize(size, size)
+            frame.mshLeader:ClearAllPoints()
+            -- Ставим, например, рядом с иконкой роли или в угол
+            frame.mshLeader:SetPoint("TOPLEFT", frame, 20, -20)
+            frame.mshLeader:Show()
+        else
+            frame.mshLeader:Hide()
+        end
     end
 end
