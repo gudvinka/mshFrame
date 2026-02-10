@@ -1241,13 +1241,16 @@ function msh.SyncBlizzardSettings()
         CompactRaidFrameManager.displayFrame:SetAlpha(alpha)
     end
 
-
+    -- левая боковая панель с названием группы в рейде
     if CompactPartyFrameTitle then
         CompactPartyFrameTitle:SetAlpha(alpha)
     end
 
-    if CompactRaidFrameManager_SetSetting then
-        CompactRaidFrameManager_SetSetting("displayGroups", show)
+    for i = 1, 8 do
+        local groupFrame = _G["CompactRaidGroup" .. i]
+        if groupFrame and groupFrame.title then
+            groupFrame.title:SetAlpha(alpha)
+        end
     end
 
     if CompactUnitFrameProfiles_ApplyCurrentSettings then

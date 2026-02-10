@@ -83,6 +83,14 @@ function msh:OnEnable()
                     msh.ApplyStyle(pf)
                 end
             end
+
+            -- а надо ли нам обновлять сеттинги Blizzard при смене группы?!
+            if msh.SyncBlizzardSettings then
+                msh.SyncBlizzardSettings()
+            end
+            if msh.SyncBlizzardSettings then
+                msh.SyncBlizzardSettings()
+            end
         end)
     end)
 end
