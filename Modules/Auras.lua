@@ -64,7 +64,9 @@ function msh.UpdateAuras(frame)
             space = cfg.debuffSpacing,
             timer = cfg.showDebuffTimer,
             scale = cfg.debuffTextScale,
-            showTooltip = cfg.showDebuffsTooltip
+            showTooltip = cfg.showDebuffsTooltip,
+            bossScale = cfg.bossDebuffScale,
+            isDebuffGroup = cfg.showBossDebuffs,
         },
         {
             pool = { frame.CenterDefensiveBuff or frame.centerStatusIcon },
@@ -101,50 +103,67 @@ function msh.UpdateAuras(frame)
         if data.pool then
             local previousIcon = nil
             local visibleCount = 0
-            for i = 1, #data.pool do
-                local icon = data.pool[i]
-                if icon then
-                    icon:EnableMouse(data.showTooltip or false)
-                    if not data.enabled then
-                        if icon:IsShown() then icon:Hide() end
-                    elseif icon:IsShown() then
-                        visibleCount = visibleCount + 1
+
+            local currentIterationPools = {}
+            local isBossEnabled = GetCVarBool("raidFramesDisplayLargerRoleSpecificDebuffs")
+
+            if data.isDebuffGroup and isBossEnabled then
+                table.insert(currentIterationPools, { p = frame.BossDebuffFrames, isBig = true })
+                table.insert(currentIterationPools, { p = frame.debuffFrames, isBig = false })
+            else
+                table.insert(currentIterationPools, { p = data.pool, isBig = false })
+            end
 
 
-                        icon:SetSize(data.size or 18, data.size or 18)
+            for _, poolInfo in ipairs(currentIterationPools) do
+                local activePool = poolInfo.p
+                if activePool then
+                    for i = 1, #activePool do
+                        local icon = activePool[i]
+                        if icon then
+                            icon:EnableMouse(data.showTooltip or false)
+                            if not data.enabled then
+                                if icon:IsShown() then icon:Hide() end
+                            elseif icon:IsShown() then
+                                visibleCount = visibleCount + 1
 
-
-                        if data.isCustom then
-                            icon:ClearAllPoints()
-                            if visibleCount == 1 then
-                                -- Первая иконка ставится в указанную в конфиге точку (Якорь)
-                                icon:SetPoint(data.point or "CENTER", frame, data.x or 0, data.y or 0)
-                            elseif previousIcon then
-                                -- Логика направления роста для последующих иконок
-                                local anchor, rel = "LEFT", "RIGHT"
-                                local offX, offY = (data.space or 2), 0
-
-                                if data.grow == "LEFT" then
-                                    anchor, rel, offX = "RIGHT", "LEFT", -(data.space or 2)
-                                elseif data.grow == "UP" then
-                                    anchor, rel, offX, offY = "BOTTOM", "TOP", 0, (data.space or 2)
-                                elseif data.grow == "DOWN" then
-                                    anchor, rel, offX, offY = "TOP", "BOTTOM", 0, -(data.space or 2)
+                                -- Размер: обычный или увеличенный для босс-аур
+                                local currentSize = data.size or 18
+                                if poolInfo.isBig then
+                                    currentSize = currentSize * (data.bossScale or 1.5)
                                 end
 
-                                icon:SetPoint(anchor, previousIcon, rel, offX, offY)
+                                icon:SetSize(currentSize, currentSize)
+
+                                if data.isCustom then
+                                    icon:ClearAllPoints()
+                                    if visibleCount == 1 then
+                                        icon:SetPoint(data.point or "CENTER", frame, data.x or 0, data.y or 0)
+                                    elseif previousIcon then
+                                        local anchor, rel = "LEFT", "RIGHT"
+                                        local offX, offY = (data.space or 2), 0
+
+                                        if data.grow == "LEFT" then
+                                            anchor, rel, offX = "RIGHT", "LEFT", -(data.space or 2)
+                                        elseif data.grow == "UP" then
+                                            anchor, rel, offX, offY = "BOTTOM", "TOP", 0, (data.space or 2)
+                                        elseif data.grow == "DOWN" then
+                                            anchor, rel, offX, offY = "TOP", "BOTTOM", 0, -(data.space or 2)
+                                        end
+
+                                        -- Используем центровку для корректного отображения иконок разного размера
+                                        icon:SetPoint(anchor, previousIcon, rel, offX, offY)
+                                    end
+                                    previousIcon = icon
+                                end
+
+                                if icon.cooldown then
+                                    icon.cooldown:SetHideCountdownNumbers(not data.timer)
+                                    local fontSize = currentSize * (data.scale or 0.8)
+                                    UpdateCooldownFont(icon, fontPath, fontSize)
+                                    if data.scale then icon.cooldown:SetScale(data.scale) end
+                                end
                             end
-                            previousIcon = icon
-                        end
-
-                        -- ТАЙМЕРЫ (всегда)
-                        if icon.cooldown then
-                            icon.cooldown:SetHideCountdownNumbers(not data.timer)
-                            -- Вызываем функцию обновления шрифта с учетом масштаба
-                            local fontSize = (data.size or 18) * (data.scale or 0.8)
-                            UpdateCooldownFont(icon, fontPath, fontSize)
-
-                            if data.scale then icon.cooldown:SetScale(data.scale) end
                         end
                     end
                 end

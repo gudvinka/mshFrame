@@ -47,6 +47,7 @@ local function AddAuraControls(args, path, key, label, customColor)
     local blizzKey = "useBlizz" .. key
     local customKey = "showCustom" .. key
     local tooltipKey = "show" .. key .. "Tooltip"
+    local isDisabled = function() return not path[toggleKey] end
 
     args[toggleKey] = {
         type = "toggle",
@@ -54,7 +55,10 @@ local function AddAuraControls(args, path, key, label, customColor)
         order = 1,
         get = function() return path[toggleKey] end,
         set = function(_, v)
-            path[toggleKey] = v; ns.needsReload = true; LibStub("AceConfigRegistry-3.0"):NotifyChange("mshFrames");
+            path[toggleKey] = v;
+            msh.SyncBlizzardSettings()
+            msh:Refresh()
+            LibStub("AceConfigRegistry-3.0"):NotifyChange("mshFrames");
         end
     }
     args[blizzKey] = {
@@ -62,9 +66,10 @@ local function AddAuraControls(args, path, key, label, customColor)
         order = 2,
         name = function()
             local color = customColor or "|cff00ffff"
-            return (not path[toggleKey] or path[customKey]) and "Стандарт Blizzard" or "|cff00ff00Стандарт Blizzard|r"
+            return (not path[toggleKey] or path[customKey]) and "Стандарт Blizzard" or
+                color .. "|cff00ff00Стандарт Blizzard|r"
         end,
-        disabled = function() return not path[toggleKey] or path[customKey] end,
+        disabled = function() return isDisabled() or path[customKey] end,
         get = function() return path[blizzKey] end,
         set = function(_, v)
             path[blizzKey] = v; ns.needsReload = true; LibStub("AceConfigRegistry-3.0"):NotifyChange("mshFrames");
@@ -77,7 +82,7 @@ local function AddAuraControls(args, path, key, label, customColor)
             local color = customColor or "|cff00ffff"
             return (not path[toggleKey] or path[blizzKey]) and "Кастомные ауры" or color .. "Кастомные ауры|r"
         end,
-        disabled = function() return not path[toggleKey] or path[blizzKey] end,
+        disabled = function() return isDisabled() or path[blizzKey] end,
         get = function() return path[customKey] end,
         set = function(_, v)
             path[customKey] = v; ns.needsReload = true; LibStub("AceConfigRegistry-3.0"):NotifyChange("mshFrames");
@@ -88,7 +93,7 @@ local function AddAuraControls(args, path, key, label, customColor)
         name = "Подсказки (Tooltip)",
         desc = "Показывать описание при наведении на иконку.",
         order = 5,
-
+        disabled = isDisabled,
         get = function() return path[tooltipKey] end,
         set = function(_, value)
             path[tooltipKey] = value
@@ -305,7 +310,6 @@ local function GetUnitGroups(path)
     AddAuraControls(buffsArgs, path, "Buffs", "|cff00ffff")
 
     local debuffsArgs = {
-        warning = reloadWarning,
         showOnlyDispellable = {
             type = "toggle",
             name = "Только рассеиваемые",
@@ -316,7 +320,6 @@ local function GetUnitGroups(path)
             set = function(_, v)
                 msh.db.profile.global.showOnlyDispellable = v
                 msh.SyncBlizzardSettings()
-                ns.needsReload = true
                 LibStub("AceConfigRegistry-3.0"):NotifyChange("mshFrames")
                 msh:Refresh()
             end,
@@ -328,6 +331,9 @@ local function GetUnitGroups(path)
             min = 8,
             max = 40,
             step = 1,
+            disabled = function()
+                return not path.showDebuffs or not path.showBossDebuffs
+            end,
             get = function()
                 return
                     path.debuffSize
@@ -426,6 +432,9 @@ local function GetUnitGroups(path)
             type = "toggle",
             name = "Таймер",
             order = 17,
+            disabled = function()
+                return not path.showDebuffs or not path.showBossDebuffs
+            end,
             get = function()
                 return
                     path.showDebuffTimer
@@ -452,71 +461,122 @@ local function GetUnitGroups(path)
                 path.debuffTextScale = v; msh:Refresh()
             end
         },
+        showBossDebuffs = {
+            type = "toggle",
+            name = "Особые дебаффы боссов",
+            desc =
+            "Включает выделение важных механик. Если включено, они будут идти первыми в очереди и иметь увеличенный размер.",
+            order = 10,
+            disabled = function() return not path.showDebuffs end,
+            get = function() return path.showBossDebuffs end,
+            set = function(_, value)
+                path.showBossDebuffs = value
+                msh.SyncBlizzardSettings()
+                msh:RefreshConfig()
+            end,
+        },
+        bossDebuffScale = {
+            type = "range",
+            name = "Масштаб босс-дебаффов",
+            desc = "Множитель размера для важных аур относительно обычного дебаффа.",
+            min = 1,
+            max = 3,
+            step = 0.1,
+            order = 11,
+            disabled = function()
+                return not path.showDebuffs or not path.showBossDebuffs
+            end,
+            get = function(info) return path.bossDebuffScale or 1.5 end,
+            set = function(info, value)
+                path.bossDebuffScale = value
+                msh:RefreshConfig()
+            end,
+        },
     }
     AddAuraControls(debuffsArgs, path, "Debuffs", "|cffff00ff")
 
-    local dispelsArgs = {
-        dispelSize = {
+    local dispelIndicatorArgs = {
+        dispelIndicatorMode = {
+            type = "select",
+            name = "Режим отображения",
+            desc = "Выберите тип работы индикатора диспела (CVar)",
+            order = 1,
+            values = {
+                ["0"] = "Выключено",
+                ["1"] = "Я могу рассеять",
+                ["2"] = "Показывать все",
+            },
+            get = function() return path.dispelIndicatorMode or "0" end,
+            set = function(_, v)
+                path.dispelIndicatorMode = v
+                msh.SyncBlizzardSettings()
+                msh:Refresh()
+            end
+        },
+        dispelIndicatorSize = {
             type = "range",
             name = "Размер",
             order = 10,
             min = 8,
             max = 40,
             step = 1,
+            disabled = function() return path.dispelIndicatorMode == "0" end,
             get = function()
                 return
-                    path.dispelSize
+                    path.dispelIndicatorSize
             end,
             set = function(_, v)
-                path.dispelSize = v; msh:Refresh()
+                path.dispelIndicatorSize = v; msh:Refresh()
             end
         },
-        dispelPoint = {
+        dispelIndicatorPoint = {
             type = "select",
             name = "Якорь",
             order = 11,
             values = anchorPoints,
+            disabled = function() return path.dispelIndicatorMode == "0" end,
             get = function()
                 return
-                    path.dispelPoint
+                    path.dispelIndicatorPoint
             end,
             set = function(_, v)
-                path.dispelPoint = v; msh:Refresh()
+                path.dispelIndicatorPoint = v; msh:Refresh()
             end
         },
-        dispelX = {
+        dispelIndicatorX = {
             type = "range",
             name = "X",
             order = 12,
             min = -100,
             max = 100,
             step = 1,
+            disabled = function() return path.dispelIndicatorMode == "0" end,
             get = function()
                 return
-                    path.dispelX
+                    path.dispelIndicatorX
             end,
             set = function(_, v)
-                path.dispelX = v; msh:Refresh()
+                path.dispelIndicatorX = v; msh:Refresh()
             end
         },
-        dispelY = {
+        dispelIndicatorY = {
             type = "range",
             name = "Y",
             order = 13,
             min = -100,
             max = 100,
             step = 1,
+            disabled = function() return path.dispelIndicatorMode == "0" end,
             get = function()
                 return
-                    path.dispelY
+                    path.dispelIndicatorY
             end,
             set = function(_, v)
-                path.dispelY = v; msh:Refresh()
+                path.dispelIndicatorY = v; msh:Refresh()
             end
         },
 
     }
-    AddAuraControls(dispelsArgs, path, "Dispels", "|cffff00ff")
 
     local bigSaveArgs = {
         warning = reloadWarning,
@@ -524,6 +584,7 @@ local function GetUnitGroups(path)
             type = "toggle",
             name = "Таймер",
             order = 10,
+            disabled = function() return not path.showBigSave end,
             get = function()
                 return
                     path.showBigSaveTimer
@@ -539,6 +600,7 @@ local function GetUnitGroups(path)
             min = 10,
             max = 60,
             step = 1,
+            disabled = function() return not path.showBigSave end,
             get = function()
                 return
                     path.bigSaveSize
@@ -606,6 +668,7 @@ local function GetUnitGroups(path)
             min = 0.5,
             max = 2,
             step = 0.1,
+            disabled = function() return not path.showBigSave end,
             get = function()
                 return
                     path.bigSaveTextScale
@@ -854,7 +917,7 @@ local function GetUnitGroups(path)
             args = {
                 buffs = { name = "Баффы", type = "group", order = 1, args = buffsArgs },
                 debuffs = { name = "Дебаффы", type = "group", order = 2, args = debuffsArgs },
-                dispel = { name = "Иконка диспела", type = "group", order = 3, args = dispelsArgs },
+                dispelIndicator = { name = "Иконка диспела", type = "group", order = 3, args = dispelIndicatorArgs },
                 bigSave = { name = "Центральный Сейв", type = "group", order = 4, args = bigSaveArgs },
             }
         },
@@ -1093,16 +1156,19 @@ local defaultProfile = {
     debuffSpacing = 2,
     showDebuffTimer = true,
     debuffTextScale = 0.8,
+    bossDebuffScale = 2,
+    showBossDebuffs = true,
+
 
     -- Иконка диспела
-    showDispel = true,
-    useBlizzDispel = true,
-    showCustomDispel = false,
-    showDispelTooltip = false,
-    dispelSize = 20,
-    dispelPoint = "TOPRIGHT",
-    dispelX = 0,
-    dispelY = 0,
+    showDispelIndicator = true,
+    useBlizzDispelIndicator = true,
+    showCustomDispelIndicator = false,
+    showDispelIndicatorTooltip = false,
+    dispelIndicatorSize = 20,
+    dispelIndicatorPoint = "TOPRIGHT",
+    dispelIndicatorX = 0,
+    dispelIndicatorY = 0,
 
     -- Центральный сейв
     showBigSave = true,
@@ -1336,7 +1402,15 @@ function msh.SyncBlizzardSettings()
     end
 
     SetCVar("raidFramesDisplayClassColor", global.raidClassColor and "1" or "0")
+
+    SetCVar("raidFramesDisplayDebuffs", groupCfg.showDebuffs and "1" or "0")
     SetCVar("raidFramesDisplayOnlyDispellableDebuffs", global.showOnlyDispellable and "1" or "0")
+    SetCVar("raidFramesDisplayLargerRoleSpecificDebuffs", groupCfg.showBossDebuffs and "1" or "0")
+
+    local dispelVal = groupCfg.dispelIndicatorMode or "0"
+    SetCVar("raidFramesDispelIndicatorType", dispelVal)
+
+    SetCVar("raidFramesCenterBigDefensive", groupCfg.showBigSave and "1" or "0")
 
     local show = groupCfg and groupCfg.showGroups
     local alpha = show and 1 or 0
