@@ -2,6 +2,7 @@
 ## Title: mshFrames
 ## Version: 0.6
 ## SavedVariables: mshFramesDB
+## IconTexture: Interface\HelpFrame\NewPlayerExperienceParts\newplayertutorial-icon-mouse-middlebutton
 
 Libs\LibSharedMedia-3.0\LibStub\LibStub.lua
 Libs\Ace3\CallbackHandler-1.0\CallbackHandler-1.0.xml

@@ -75,47 +75,55 @@ function msh.UpdateUnitDisplay(frame)
 
         if shouldShowCustom and role and role ~= "NONE" then
             if frame.mshRole then
-                frame.mshRole:SetTexture([[Interface\RaidFrame\RaidFrame]])
-                local size = cfg.roleIconSize or 12
-                frame.mshRole:SetSize(size, size)
-                frame.mshRole:ClearAllPoints()
-                frame.mshRole:SetPoint(cfg.roleIconPoint or "TOPLEFT", frame, cfg.roleIconX or 2, cfg.roleIconY or -2)
-
+                local atlasName
                 if role == "TANK" then
-                    frame.mshRole:SetTexCoord(0.90234375, 0.984375, 0.2890625, 0.453125)
+                    atlasName = "Warfronts-BaseMapIcons-Horde-Armory-Minimap"
                 elseif role == "HEALER" then
-                    frame.mshRole:SetTexCoord(20 / 64, 39 / 64, 1 / 64, 20 / 64)
+                    atlasName = "GreenCross"
                 elseif role == "DAMAGER" then
-                    frame.mshRole:SetTexCoord(20 / 64, 39 / 64, 22 / 64, 41 / 64)
+                    atlasName = "Fishing-Hole"
                 end
-                frame.mshRole:Show()
+                if atlasName then
+                    frame.mshRole:SetAtlas(atlasName)
+                    local size = cfg.roleIconSize or 12
+                    frame.mshRole:SetSize(size, size)
+                    frame.mshRole:ClearAllPoints()
+                    frame.mshRole:SetPoint(cfg.roleIconPoint or "TOPLEFT", frame, cfg.roleIconX or 2, cfg.roleIconY or -2)
+                    frame.mshRole:Show()
+                end
             end
         else
             if frame.mshRole then frame.mshRole:Hide() end
         end
     end
 
-    -- ОБНОВЛЕНИЕ ИКОНКИ ЛИДЕРА
+    -- ЛИДЕР И АССИСТЕНТ
     if frame.mshLeader then
         local isLeader = UnitIsGroupLeader(unit)
-        local isAssistant = UnitIsGroupAssistant(unit) and not IsInRaid(LE_PARTY_CATEGORY_HOME)
+        local isAssistant = UnitIsGroupAssistant(unit)
 
-        -- Если у тебя в конфиге будет параметр showLeaderIcon (добавим его позже)
-        if (isLeader or isAssistant) then
-            if isLeader then
-                frame.mshLeader:SetTexture("Interface\\GroupFrame\\UI-Group-LeaderIcon")
-            else
-                frame.mshLeader:SetTexture("Interface\\GroupFrame\\UI-Group-AssistantIcon")
-            end
+        -- Проверяем, включена ли иконка в настройках (по умолчанию true)
+        if (isLeader or isAssistant) and (cfg.showLeaderIcon ~= false) then
+            -- сначала иконка лидера, потом асиста
+            frame.mshLeader:SetAtlas(isLeader and "BuildanAbomination-32x32" or "poi-soulspiritghost")
+            frame.mshLeader:SetDrawLayer("OVERLAY", 1)
 
-            -- Настраиваем размер и позицию (пока жестко, потом вынесем в cfg)
-            local size = 12
+            -- Подтягиваем размеры и координаты из твоего нового раздела в Config.lua
+            local size = cfg.leaderIconSize or 12
             frame.mshLeader:SetSize(size, size)
+
             frame.mshLeader:ClearAllPoints()
-            -- Ставим, например, рядом с иконкой роли или в угол
-            frame.mshLeader:SetPoint("TOPLEFT", frame, 20, -20)
+            -- Применяем точку привязки и смещение X/Y из ползунков
+            frame.mshLeader:SetPoint(
+                cfg.leaderIconPoint or "TOPLEFT",
+                frame,
+                cfg.leaderIconX or 0,
+                cfg.leaderIconY or 0
+            )
+
             frame.mshLeader:Show()
         else
+            -- Если игрока разжаловали или иконка выключена в меню — скрываем
             frame.mshLeader:Hide()
         end
     end

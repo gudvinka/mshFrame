@@ -28,6 +28,19 @@ local anchorPoints = {
     ["BOTTOM"] = "Снизу",
     ["BOTTOMRIGHT"] = "Снизу справа",
 }
+local outlineModes = {
+    ["NONE"] = "Нет",
+    ["OUTLINE, SLUG"] = "Тонкий Красивый",
+    ["OUTLINE"] = "Тонкий Уродский",
+    ["THICKOUTLINE"] = "Жирный",
+    ["MONOCHROME"] = "Пиксельный",
+}
+local outlineOrder = {
+    "NONE",
+    "OUTLINE, SLUG",
+    "OUTLINE",
+    "THICKOUTLINE",
+    "MONOCHROME" }
 
 local function AddAuraControls(args, path, key, label, customColor)
     local toggleKey = "show" .. key
@@ -83,19 +96,70 @@ local function AddAuraControls(args, path, key, label, customColor)
     }
 end
 
-local outlineModes = {
-    ["NONE"] = "Нет",
-    ["OUTLINE, SLUG"] = "Тонкий Красивый",
-    ["OUTLINE"] = "Тонкий Уродский",
-    ["THICKOUTLINE"] = "Жирный",
-    ["MONOCHROME"] = "Пиксельный",
-}
-local outlineOrder = {
-    "NONE",
-    "OUTLINE, SLUG",
-    "OUTLINE",
-    "THICKOUTLINE",
-    "MONOCHROME" }
+local function GetLeaderIconControls(path)
+    return {
+        name = "Иконка лидера",
+        type = "group",
+        order = 7, -- Порядок в списке (после Ролей)
+        args = {
+            showLeaderIcon = {
+                name = "Включить иконку",
+                type = "toggle",
+                order = 1,
+                get = function() return path.showLeaderIcon ~= false end,
+                set = function(_, v)
+                    path.showLeaderIcon = v; msh:Refresh()
+                end,
+            },
+            leaderIconSize = {
+                name = "Размер",
+                type = "range",
+                min = 8,
+                max = 40,
+                step = 1,
+                order = 2,
+                get = function() return path.leaderIconSize or 12 end,
+                set = function(_, v)
+                    path.leaderIconSize = v; msh:Refresh()
+                end,
+            },
+            leaderIconPoint = {
+                name = "Точка привязки",
+                type = "select",
+                values = anchorPoints,
+                order = 3,
+                get = function() return path.leaderIconPoint or "TOPLEFT" end,
+                set = function(_, v)
+                    path.leaderIconPoint = v; msh:Refresh()
+                end,
+            },
+            leaderIconX = {
+                name = "Смещение X",
+                type = "range",
+                min = -100,
+                max = 100,
+                step = 1,
+                order = 4,
+                get = function() return path.leaderIconX or 0 end,
+                set = function(_, v)
+                    path.leaderIconX = v; msh:Refresh()
+                end,
+            },
+            leaderIconY = {
+                name = "Смещение Y",
+                type = "range",
+                min = -100,
+                max = 100,
+                step = 1,
+                order = 5,
+                get = function() return path.leaderIconY or 0 end,
+                set = function(_, v)
+                    path.leaderIconY = v; msh:Refresh()
+                end,
+            },
+        },
+    }
+end
 
 -- Функция для генерации вложенных групп
 local function GetUnitGroups(path)
@@ -114,7 +178,7 @@ local function GetUnitGroups(path)
                     path.buffSize
             end,
             set = function(_, v)
-                path.buffSize = v; Refresh()
+                path.buffSize = v; msh:Refresh()
             end
         },
         buffPoint = {
@@ -131,7 +195,7 @@ local function GetUnitGroups(path)
                     path.buffPoint
             end,
             set = function(_, v)
-                path.buffPoint = v; Refresh()
+                path.buffPoint = v; msh:Refresh()
             end
         },
         buffX = {
@@ -234,7 +298,7 @@ local function GetUnitGroups(path)
                     path.buffTextScale
             end,
             set = function(_, v)
-                path.buffTextScale = v; Refresh()
+                path.buffTextScale = v; msh:Refresh()
             end
         },
     }
@@ -254,7 +318,7 @@ local function GetUnitGroups(path)
                 msh.SyncBlizzardSettings()
                 ns.needsReload = true
                 LibStub("AceConfigRegistry-3.0"):NotifyChange("mshFrames")
-                Refresh()
+                msh:Refresh()
             end,
         },
         debuffSize = {
@@ -972,6 +1036,7 @@ local function GetUnitGroups(path)
                 },
             }
         },
+        leader = GetLeaderIconControls(path),
     }
 end
 
