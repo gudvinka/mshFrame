@@ -72,12 +72,7 @@ hooksecurefunc("CompactUnitFrame_UpdateName", function(frame)
     end
 end)
 
-function msh:Refresh(full)
-    if full then
-        self:RefreshConfig()
-        return
-    end
-
+function msh:Refresh()
     for i = 1, 5 do
         local pf = _G["CompactPartyFrameMember" .. i]
         if pf then msh.ApplyStyle(pf) end
@@ -102,6 +97,7 @@ end
 function msh:OnEnable()
     self:RegisterEvent("PLAYER_ENTERING_WORLD", function()
         if msh.SyncBlizzardSettings then msh.SyncBlizzardSettings() end
+        C_Timer.After(0.5, function() msh:Refresh() end)
     end)
 
     if _G.EditMode and _G.EditMode.Exit then

@@ -898,30 +898,6 @@ local function GetUnitGroups(path)
                         path.fontSizeName = v; msh:Refresh()
                     end,
                 },
-                shortenNames = {
-                    type = "toggle",
-                    name = "Обрезать имя",
-                    desc = "Включает сокращение длинных имен",
-                    order = 4,
-                    get = function() return path.shortenNames end,
-                    set = function(_, v)
-                        path.shortenNames = v; msh:Refresh()
-                    end,
-                },
-                nameLength = {
-                    type = "range",
-                    name = "Длина имени",
-                    desc = "Количество символов, если включена обрезка",
-                    order = 5,
-                    min = 2,
-                    max = 20,
-                    step = 1,
-                    disabled = function() return not path.shortenNames end,
-                    get = function() return path.nameLength end,
-                    set = function(_, v)
-                        path.nameLength = v; msh:Refresh()
-                    end,
-                },
                 namePoint = {
                     type = "select",
                     name = "Точка привязки",
