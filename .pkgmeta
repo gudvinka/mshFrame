@@ -1,13 +1,19 @@
 package-as: mshFrames
 
 externals:
-  Libs/LibStub: git://github.com/Lua-Packages/LibStub.git
-  Libs/CallbackHandler-1.0: git://github.com/Lua-Packages/CallbackHandler-1.0.git
-  Libs/Ace3: git://github.com/Stanzilla/Ace3.git
-  Libs/LibSharedMedia-3.0: git://github.com/benrob0329/LibSharedMedia-3.0.git
-  Libs/AceGUI-3.0-SharedMediaWidgets: git://github.com/Ice-Mage/AceGUI-3.0-SharedMediaWidgets.git
-  Libs/LibSerialize: git://github.com/Ross-G/LibSerialize.git
-  Libs/LibDeflate: git://github.com/mizofumi0411/LibDeflate.git
+  Libs/LibStub: 
+    url: https://repos.wowace.com/wow/libstub/mainline/trunk
+    tag: latest
+  Libs/CallbackHandler-1.0:
+    url: https://repos.wowace.com/wow/callbackhandler/mainline/trunk
+    tag: latest
+  Libs/Ace3: 
+    url: https://github.com/Stanzilla/Ace3.git
+    tag: latest
+  Libs/LibSharedMedia-3.0: 14338
+  Libs/AceGUI-3.0-SharedMediaWidgets: 14755
+  Libs/LibSerialize: https://github.com/Ross-G/LibSerialize.git
+  Libs/LibDeflate: https://github.com/mizofumi0411/LibDeflate.git
 
 ignore:
   - .github
