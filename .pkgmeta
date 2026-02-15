@@ -3,22 +3,17 @@ package-as: mshFrames
 externals:
   Libs/LibStub:
     url: https://repos.wowace.com/wow/libstub/mainline/trunk
-    type: svn
+    tag: latest
   Libs/CallbackHandler-1.0:
     url: https://repos.wowace.com/wow/callbackhandler/mainline/trunk
-    type: svn
-  Libs/Ace3:
+    tag: latest
+  Libs/Ace3: 
     url: https://github.com/Stanzilla/Ace3.git
-  Libs/LibSharedMedia-3.0:
-    url: https://repos.wowace.com/wow/lib-shared-media-3-0/mainline/trunk
-    type: svn
-  Libs/AceGUI-3.0-SharedMediaWidgets:
-    url: https://repos.wowace.com/wow/ace-gui-3-0-shared-media-widgets/mainline/trunk
-    type: svn
-  Libs/LibSerialize:
-    url: https://github.com/Ross-G/LibSerialize.git
-  Libs/LibDeflate:
-    url: https://github.com/mizofumi0411/LibDeflate.git
+    tag: latest
+  Libs/LibSharedMedia-3.0: 14338
+  Libs/AceGUI-3.0-SharedMediaWidgets: 14755
+  Libs/LibSerialize: https://github.com/Ross-G/LibSerialize.git
+  Libs/LibDeflate: https://github.com/mizofumi0411/LibDeflate.git
 
 ignore:
   - .github
