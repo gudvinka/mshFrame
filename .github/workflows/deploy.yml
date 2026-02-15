@@ -14,37 +14,28 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Package and Release
+      - name: Package Addon
         uses: BigWigsMods/packager@master
         with:
-          archive-name: mshFrames
-          addon-name: mshFrames
+          args: "-g"
         env:
           CF_API_KEY: ${{ secrets.CF_API_KEY }}
           WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Cleanup and Rename Zip
+      - name: Create Clean Zip
         run: |
-          ORIGINAL_ZIP=$(ls mshFrames*.zip)
-          echo "Found archive: $ORIGINAL_ZIP"
+          rm -rf .release/mshFrames/.github
+          rm -rf .release/mshFrames/.vscode
+          rm -rf .release/mshFrames/.gitignore
+          rm -rf .release/mshFrames/.pkgmeta
           
-          unzip $ORIGINAL_ZIP -d temp_folder
-          
-          rm -rf temp_folder/mshFrames/.github
-          rm -rf temp_folder/mshFrames/.vscode
-          rm -rf temp_folder/mshFrames/.gitignore
-          rm -rf temp_folder/mshFrames/.pkgmeta
-          
-          cd temp_folder
+          cd .release
           zip -r ../mshFrames.zip mshFrames
           cd ..
-          
-          rm $ORIGINAL_ZIP
 
-      - name: Update GitHub Release
+      - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: mshFrames.zip
         env:
