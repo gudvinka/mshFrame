@@ -5,6 +5,8 @@ local LSM = LibStub("LibSharedMedia-3.0")
 local isUpdating = false
 
 function msh.CreateHealthLayers(frame)
+    if not msh.db or not msh.db.profile then return end
+    local cfg = msh.GetConfigForFrame(frame)
     if frame.mshHealthCreated then return end
 
     frame.mshHP = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")

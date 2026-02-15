@@ -4,7 +4,7 @@
 ## Version: @project-version@
 ## Author: gudvinka
 ## SavedVariables: mshFramesDB
-## IconTexture: Interface\AddOns\mshFrames\Media\logo
+## IconTexture: Interface\AddOns\mshFrames\Media\logo.tga
 ## License: MIT
 
 Libs\LibStub\LibStub.lua
@@ -20,9 +20,9 @@ Libs\AceGUI-3.0-SharedMediaWidgets\widget.xml
 Libs\LibSerialize\LibSerialize.lua
 Libs\LibDeflate\LibDeflate.lua
 
+Core.lua
 Config.lua
 Parser.lua
 Modules\Units.lua
 Modules\Health.lua
 Modules\Auras.lua
-Core.lua

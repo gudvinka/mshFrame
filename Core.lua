@@ -3,6 +3,10 @@ local addonName, ns = ...
 local msh = LibStub("AceAddon-3.0"):NewAddon(ns, addonName, "AceEvent-3.0")
 
 function msh.GetConfigForFrame(frame)
+    if not msh.db or not msh.db.profile then
+        return {}
+    end
+
     if not frame or frame:IsForbidden() then return nil end
 
     local name = frame:GetName() or ""
@@ -13,10 +17,12 @@ function msh.GetConfigForFrame(frame)
         return msh.db.profile.party
     end
 
-    return nil
+
+    return msh.db.profile
 end
 
 function msh.ApplyStyle(frame)
+    if not msh.db then return end
     if not frame or frame:IsForbidden() then return end
 
     local cfg = msh.GetConfigForFrame(frame)
