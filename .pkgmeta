@@ -7,3 +7,4 @@ ignore:
   - .pkgmeta
   - README.md
   - LICENSE
+  - curseprojectid.txt

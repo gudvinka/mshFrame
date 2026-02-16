@@ -9,7 +9,9 @@ local function UpdateCooldownFont(button, fontPath, size)
     if button and button.cooldown then
         local cdText = button.cooldown:GetRegions()
         if cdText and cdText.SetFont then
-            cdText:SetFont(fontPath, size, "OUTLINE")
+            local safeSize = (size and size > 0) and size or 10
+            local safeFont = (fontPath and fontPath ~= "") and fontPath or [[Fonts\FRIZQT__.TTF]]
+            cdText:SetFont(safeFont, safeSize, "OUTLINE")
         end
     end
 end

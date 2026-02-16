@@ -596,26 +596,6 @@ local function GetUnitGroups(path)
                 LibStub("AceConfigRegistry-3.0"):NotifyChange("mshFrames")
             end
         },
-        -- dispelIndicatorOverlay = {
-        --     type = "toggle",
-        --     name = "Подсветка рамки",
-        --     desc = "Показывать стандартную цветную рамку Blizzard при наличии дебаффа.",
-        --     order = 11,
-        --     disabled = function() return msh.db.profile.global.dispelIndicatorMode == "0" end,
-        --     get = function()
-        --         -- Если значение nil (еще не задано), считаем его включенным (true)
-        --         if msh.db.profile.global.dispelIndicatorOverlay == nil then return true end
-        --         return msh.db.profile.global.dispelIndicatorOverlay
-        --     end,
-        --     set = function(_, v)
-        --         msh.db.profile.global.dispelIndicatorOverlay = v
-        --         msh.SyncBlizzardSettings()
-        --         -- Важно вызвать принудительное обновление всех фреймов
-        --         msh:RefreshConfig()
-        --         -- Сообщаем AceConfig, что данные изменились
-        --         LibStub("AceConfigRegistry-3.0"):NotifyChange("mshFrames")
-        --     end
-        -- },
         dispelIndicatorSize = {
             type = "range",
             name = "Размер",
@@ -1235,6 +1215,14 @@ end
 
 -- Дефолты
 local defaultProfile = {
+    unit_name = true,
+    unit_health = true,
+    unit_power = true,
+    unit_mana = true,
+    unit_level = true,
+    unit_class = true,
+    textScale = 0.7,
+
     -- General
     texture = "Solid",
     showGroups = true,
@@ -1242,7 +1230,7 @@ local defaultProfile = {
 
     -- Имя
     fontName = "Friz Quadrata TT",
-    nameOutline = "OUTLINE",
+    nameOutline = "OUTLINE, SLUG",
     fontSizeName = 13,
     shortenNames = true,
     nameLength = 5,
@@ -1261,11 +1249,11 @@ local defaultProfile = {
     -- Ауры
     -- Баффы
     showBuffs = true,
-    useBlizzBuffs = false,
-    showCustomBuffs = true,
+    useBlizzBuffs = true,
+    showCustomBuffs = false,
     showBuffsTooltip = false,
     buffSize = 20,
-    buffTextScale = 0.8,
+    buffTextScale = 0.,
     buffPoint = "BOTTOMLEFT",
     buffGrow = "RIGHT",
     buffSpacing = 2,
@@ -1276,8 +1264,8 @@ local defaultProfile = {
 
     -- Дебаффы
     showDebuffs = true,
-    useBlizzDebuffs = false,
-    showCustomDebuffs = true,
+    useBlizzDebuffs = true,
+    showCustomDebuffs = false,
     showDebuffsTooltip = false,
     debuffSize = 20,
     debuffPoint = "BOTTOMRIGHT",
@@ -1350,9 +1338,11 @@ ns.defaults = {
             showBossDebuffs = true,
             raidClassColor = true,
             globalFontName = "Friz Quadrata TT",
+
         },
         party = defaultProfile,
         raid = defaultProfile,
+
     }
 }
 
@@ -1424,7 +1414,7 @@ ns.options = {
                 logo = {
                     type = "description",
                     name = "",
-                    image = [[Interface\AddOns\mshFrames\Media\onyaka]],
+                    image = [[Interface\AddOns\mshFrames\Media\logo]],
                     imageWidth = 150,
                     imageHeight = 150,
                     order = 0,
@@ -1639,4 +1629,24 @@ function msh:ImportProfileFromString(str)
     else
         print("Ошибка при десериализации данных.")
     end
+end
+
+function msh:SetupConfig()
+    -- Инициализация БД с дефолтами
+    self.db = LibStub("AceDB-3.0"):New("mshFramesDB", ns.defaults, true)
+    self.db.RegisterCallback(msh, "OnProfileReset", "RefreshConfig")
+    self.db.RegisterCallback(msh, "OnProfileChanged", "RefreshConfig")
+    self.db.RegisterCallback(msh, "OnProfileCopied", "RefreshConfig")
+
+    local options = {
+        name = "mshFrames",
+        handler = msh, -- указываем обработчик msh
+        type = "group",
+        args = {
+            -- твои настройки здесь
+        },
+    }
+
+    AceConfig:RegisterOptionsTable("mshFrames", options)
+    self.optionsFrame = AceConfigDialog:AddToBlizOptions("mshFrames", "mshFrames")
 end

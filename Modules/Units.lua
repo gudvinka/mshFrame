@@ -173,6 +173,9 @@ function msh.UpdateUnitDisplay(frame)
     frame.mshName:ClearAllPoints()
     frame.mshName:SetPoint(cfg.namePoint or "CENTER", frame, cfg.nameX or 0, cfg.nameY or 0)
     frame.mshName:SetTextColor(1, 1, 1)
+    frame.mshName:SetWidth(frame:GetWidth())
+    frame.mshName:SetMaxLines(1)
+
 
     if frame.name then frame.name:SetAlpha(0) end
 end
