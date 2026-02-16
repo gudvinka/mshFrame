@@ -813,7 +813,7 @@ local function GetUnitGroups(path)
 
                 showGroups = {
                     name = "Заголовки групп",
-                    desc = "Показывать названия групп SetAlpha(0)",
+                    desc = "Показывать названия групп",
                     type = "toggle",
                     order = 2,
                     get = function() return path.showGroups end,
@@ -1213,40 +1213,34 @@ local function GetUnitGroups(path)
     }
 end
 
-
 local defaultProfile = {
 
-
     texture = "Solid",
-    showGroups = true,
+    showGroups = false,
     hoverAlpha = 0.2,
 
-
     fontName = "Friz Quadrata TT",
-    nameOutline = "OUTLINE",
+    nameOutline = "OUTLINE, SLUG",
     fontSizeName = 13,
     shortenNames = true,
     nameLength = 5,
     namePoint = "TOP",
     nameX = 0,
-    nameY = 0,
-
+    nameY = -6,
 
     fontStatus = "Friz Quadrata TT",
-    statusOutline = "OUTLINE",
+    statusOutline = "OUTLINE, SLUG",
     fontSizeStatus = 10,
     statusPoint = "RIGHT",
     statusX = -2,
     statusY = 0,
-
-
 
     showBuffs = true,
     useBlizzBuffs = true,
     showCustomBuffs = false,
     showBuffsTooltip = false,
     buffSize = 20,
-    buffTextScale = 0.,
+    buffTextScale = 0.6,
     buffPoint = "BOTTOMLEFT",
     buffGrow = "RIGHT",
     buffSpacing = 2,
@@ -1254,7 +1248,6 @@ local defaultProfile = {
     buffAlpha = 1,
     buffX = 2,
     buffY = 2,
-
 
     showDebuffs = true,
     useBlizzDebuffs = true,
@@ -1268,18 +1261,17 @@ local defaultProfile = {
     debuffSpacing = 2,
     showDebuffTimer = true,
     debuffAlpha = 1,
-    debuffTextScale = 0.8,
+    debuffTextScale = 0.6,
     showBossDebuffs = true,
-
+    showOnlyDispellable = false,
 
     showDispelIndicator = true,
     dispelIndicatorOverlay = true,
     dispelIndicatorSize = 20,
     dispelIndicatorAlpha = 1,
     dispelIndicatorPoint = "TOPRIGHT",
-    dispelIndicatorX = 0,
-    dispelIndicatorY = 0,
-
+    dispelIndicatorX = 5,
+    dispelIndicatorY = 5,
 
     showBigSave = true,
     useBlizzBigSave = true,
@@ -1290,22 +1282,20 @@ local defaultProfile = {
     bigSavePoint = "CENTER",
     bigSaveX = 0,
     bigSaveY = 0,
-    bigSaveTextScale = 0.8,
+    bigSaveTextScale = 0.5,
     bigSaveAlpha = 1,
-
 
     showRaidMark = true,
     raidMarkSize = 20,
     raidMarkAlpha = 1,
-    raidMarkPoint = "TOPRIGHT",
-    raidMarkX = 0,
-    raidMarkY = 0,
+    raidMarkPoint = "RIGHT",
+    raidMarkX = -5,
+    raidMarkY = 15,
 
-
-    useBlizzRole = true,
-    showCustomRoleIcon = false,
-    showRoleTank = false,
-    showRoleHeal = false,
+    useBlizzRole = false,
+    showCustomRoleIcon = true,
+    showRoleTank = true,
+    showRoleHeal = true,
     showRoleDamager = false,
     roleIconSize = 15,
     roleIconAlpha = 1,
@@ -1313,21 +1303,18 @@ local defaultProfile = {
     roleIconX = 2,
     roleIconY = -2,
 
-
-    showLeader = true,
-    leaderSize = 20,
-    leaderPoint = "TOPLEFT",
-    leaderX = 2,
-    leaderY = -2,
+    showLeaderIcon = true,
+    leaderIconSize = 15,
+    leaderIconPoint = "TOPLEFT",
+    leaderIconX = 15,
+    leaderIconY = 8,
     leaderIconAlpha = 1
-
 }
 
 ns.defaults = {
     profile = {
         global = {
             hpMode = "PERCENT",
-            showOnlyDispellable = false,
             showBossDebuffs = true,
             raidClassColor = true,
             globalFontName = "Friz Quadrata TT",
@@ -1539,23 +1526,23 @@ function msh.SyncBlizzardSettings()
 
     SetCVar("raidFramesCenterBigDefensive", showBigSave and "1" or "0")
 
-    local show = groupCfg and groupCfg.showGroups
-    local alpha = show and 1 or 0
-
-    if CompactRaidFrameManager and CompactRaidFrameManager.displayFrame then
-        CompactRaidFrameManager.displayFrame:SetAlpha(alpha)
+    local currentShowGroups = false
+    if IsInRaid() then
+        currentShowGroups = profile.raid and profile.raid.showGroups
+    else
+        currentShowGroups = profile.party and profile.party.showGroups
     end
-
-
-    if CompactPartyFrameTitle then
-        CompactPartyFrameTitle:SetAlpha(alpha)
-    end
+    local alpha = currentShowGroups and 1 or 0
 
     for i = 1, 8 do
         local groupFrame = _G["CompactRaidGroup" .. i]
         if groupFrame and groupFrame.title then
             groupFrame.title:SetAlpha(alpha)
         end
+    end
+
+    if CompactPartyFrame and CompactPartyFrame.title then
+        CompactPartyFrame.title:SetAlpha(alpha)
     end
 
     if CompactUnitFrameProfiles_ApplyCurrentSettings then

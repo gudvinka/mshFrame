@@ -69,7 +69,7 @@ function msh.UpdateUnitDisplay(frame)
 
 
         if (isLeader or isAssistant) and (cfg.showLeaderIcon ~= false) then
-            frame.mshLeader:SetAtlas(isLeader and "BuildanAbomination-32x32" or "poi-soulspiritghost")
+            frame.mshLeader:SetAtlas(isLeader and "GO-icon-Lead-Applied" or "GO-icon-Assist-Applied")
             frame.mshLeader:SetDrawLayer("OVERLAY", 1)
 
             local size = cfg.leaderIconSize or 12
@@ -154,11 +154,11 @@ function msh.UpdateUnitDisplay(frame)
             if frame.mshRole then
                 local atlasName
                 if role == "TANK" then
-                    atlasName = "Warfronts-BaseMapIcons-Horde-Armory-Minimap"
+                    atlasName = "GO-icon-role-Header-Tank"
                 elseif role == "HEALER" then
-                    atlasName = "GreenCross"
+                    atlasName = "GO-icon-role-Header-Healer"
                 elseif role == "DAMAGER" then
-                    atlasName = "Fishing-Hole"
+                    atlasName = "GO-icon-role-Header-DPS"
                 end
                 if atlasName then
                     frame.mshRole:SetAtlas(atlasName)
