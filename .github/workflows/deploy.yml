@@ -19,4 +19,4 @@ jobs:
       - name: Package and Release
         uses: BigWigsMods/Packager@v2
         with:
-          args: -p ${{ secrets.CF_API_KEY }} -w ${{ secrets.WAGO_API_TOKEN }}
+          args: -p ${{ secrets.CF_API_KEY }}
