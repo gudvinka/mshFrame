@@ -2,6 +2,8 @@ name: Deploy Addon
 
 on:
   push:
+    branches:
+      - master
     tags:
       - 'v*'
 
