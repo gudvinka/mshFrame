@@ -1,8 +1,8 @@
-local L = LibStub("AceLocale-3.0"):NewLocale("mshFrames", "ruRU")
+local L = LibStub("AceLocale-3.0"):NewLocale("mshFrames", "ruRU", true)
 if not L then return end
 
-L["ВНИМАНИЕ:"] = "WARNING:"
-L["Требуется /reload для применения настроек."] = "Requires /reload to apply settings."
+L["ВНИМАНИЕ:"] = "ВНИМАНИЕ:"
+L["Требуется /reload для применения настроек."] = "Требуется /reload для применения настроек."
 
 L["Сверху слева"] = "Сверху слева"
 L["Сверху"] = "Сверху"
